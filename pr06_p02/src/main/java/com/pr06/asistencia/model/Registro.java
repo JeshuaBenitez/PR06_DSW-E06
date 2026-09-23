@@ -1,8 +1,12 @@
 package com.pr06.asistencia.model;
 
+import java.io.Serializable;
+
 import java.time.LocalDateTime;
 
-public class Registro {
+public class Registro implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private final int idRegistro;
     private final int idSesion;

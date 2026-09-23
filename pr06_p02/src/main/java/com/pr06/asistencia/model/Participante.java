@@ -1,6 +1,10 @@
 package com.pr06.asistencia.model;
 
-public class Participante {
+import java.io.Serializable;
+
+public class Participante implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private final int idParticipante;
     private final String codigoFicticio;

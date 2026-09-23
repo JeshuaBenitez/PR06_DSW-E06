@@ -1,9 +1,13 @@
 package com.pr06.asistencia.model;
 
+import java.io.Serializable;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-public class Sesion {
+public class Sesion implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private final int idSesion;
     private final String nombre;

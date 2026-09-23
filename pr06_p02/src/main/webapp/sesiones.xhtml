@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui" lang="es">
+<f:metadata><f:viewAction action="#{registroBean.cargarSesiones}" /></f:metadata>
+<h:head>
+    <title>Consultar sesiones</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        body { font-family: sans-serif; margin: 2rem; }
+        nav a { display: inline-block; margin: 0 1rem 1rem 0; }
+        .campo { margin-bottom: 1rem; }
+        .campo label { display: block; margin-bottom: .4rem; }
+        .campo .ui-selectonemenu, .campo textarea { max-width: 100%; }
+        .ui-datatable { margin-top: 1rem; }
+    </style>
+</h:head>
+<h:body>
+    <h1>Consultar sesiones</h1>
+    <nav aria-label="Navegación principal">
+        <h:link outcome="index" value="Inicio" />
+        <h:link outcome="sesiones" value="Consultar sesiones" />
+        <h:link outcome="registro" value="Registrar asistencia" />
+        <h:link outcome="registros" value="Consultar registros" />
+    </nav>
+    <h:form id="sesionesForm">
+        <p:messages id="mensajes" showDetail="false" />
+        <p:dataTable id="sesiones" value="#{registroBean.sesiones}" var="sesion"
+                     emptyMessage="No existen sesiones registradas." paginator="true" rows="10"
+                     paginatorAlwaysVisible="false" reflow="true">
+            <p:column headerText="ID"><h:outputText value="#{sesion.idSesion}" /></p:column>
+            <p:column headerText="Nombre"><h:outputText value="#{sesion.nombre}" /></p:column>
+            <p:column headerText="Fecha"><h:outputText value="#{sesion.fecha}">
+                <f:convertDateTime type="localDate" pattern="dd/MM/yyyy" />
+            </h:outputText></p:column>
+            <p:column headerText="Inicio"><h:outputText value="#{sesion.horaInicio}" /></p:column>
+            <p:column headerText="Fin"><h:outputText value="#{sesion.horaFin}" /></p:column>
+            <p:column headerText="Estado"><h:outputText value="#{sesion.estado}" /></p:column>
+        </p:dataTable>
+    </h:form>
+</h:body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui" lang="es">
+<h:head>
+    <title>PR06 - Control de asistencia con eventos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        body { font-family: sans-serif; margin: 2rem; }
+        nav a { display: inline-block; margin: 0 1rem 1rem 0; }
+        .campo { margin-bottom: 1rem; }
+        .campo label { display: block; margin-bottom: .4rem; }
+        .campo .ui-selectonemenu, .campo textarea { max-width: 100%; }
+        .ui-datatable { margin-top: 1rem; }
+    </style>
+</h:head>
+<h:body>
+    <h1>PR06 - Control de asistencia con eventos</h1>
+    <nav aria-label="Navegación principal">
+        <h:link outcome="index" value="Inicio" />
+        <h:link outcome="sesiones" value="Consultar sesiones" />
+        <h:link outcome="registro" value="Registrar asistencia" />
+        <h:link outcome="registros" value="Consultar registros" />
+    </nav>
+    <p>Incremento P03 — JSF y PrimeFaces.</p>
+    <p>Consulte las sesiones, registre una entrada y compruebe los registros de asistencia.</p>
+</h:body>
+</html>

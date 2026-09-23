@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui" lang="es">
+<f:metadata><f:viewAction action="#{registroBean.cargarFormulario}" /></f:metadata>
+<h:head>
+    <title>Registrar asistencia</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        body { font-family: sans-serif; margin: 2rem; }
+        nav a { display: inline-block; margin: 0 1rem 1rem 0; }
+        .campo { margin-bottom: 1rem; }
+        .campo label { display: block; margin-bottom: .4rem; }
+        .campo .ui-selectonemenu, .campo textarea { max-width: 100%; }
+        .ui-datatable { margin-top: 1rem; }
+    </style>
+</h:head>
+<h:body>
+    <h1>Registrar asistencia</h1>
+    <nav aria-label="Navegación principal">
+        <h:link outcome="index" value="Inicio" />
+        <h:link outcome="sesiones" value="Consultar sesiones" />
+        <h:link outcome="registro" value="Registrar asistencia" />
+        <h:link outcome="registros" value="Consultar registros" />
+    </nav>
+    <h:form id="registroForm">
+        <p:messages id="mensajes" showDetail="false" />
+        <p:panel id="campos" header="Registrar entrada" style="max-width: 650px">
+            <div class="campo">
+                <p:outputLabel for="sesion" value="Sesión" />
+                <p:selectOneMenu validator="#{registroBean.validarSesion}" id="sesion" value="#{registroBean.idSesion}" required="true"
+                                 requiredMessage="Debe seleccionar una sesión."
+                                 converterMessage="Debe seleccionar una sesión válida."
+                                 validatorMessage="Debe seleccionar una sesión válida.">
+                    <f:selectItem itemLabel="Seleccione una sesión" itemValue="#{null}" noSelectionOption="true" />
+                    <f:selectItems value="#{registroBean.sesiones}" var="sesion"
+                                   itemValue="#{sesion.idSesion}" itemLabel="#{sesion.fecha} - #{sesion.nombre}" />
+                </p:selectOneMenu>
+            </div>
+            <div class="campo">
+                <p:outputLabel for="participante" value="Participante" />
+                <p:selectOneMenu validator="#{registroBean.validarParticipante}" id="participante" value="#{registroBean.idParticipante}" required="true"
+                                 requiredMessage="Debe seleccionar un participante."
+                                 converterMessage="Debe seleccionar un participante activo válido."
+                                 validatorMessage="Debe seleccionar un participante activo válido.">
+                    <f:selectItem itemLabel="Seleccione un participante" itemValue="#{null}" noSelectionOption="true" />
+                    <f:selectItems value="#{registroBean.participantes}" var="participante"
+                                   itemValue="#{participante.idParticipante}"
+                                   itemLabel="#{participante.codigoFicticio} - #{participante.nombre} #{participante.apellido}" />
+                </p:selectOneMenu>
+            </div>
+            <div class="campo">
+                <p:outputLabel for="tipo" value="Tipo de registro" />
+                <p:selectOneMenu validator="#{registroBean.validarTipo}" id="tipo" value="#{registroBean.tipoRegistro}" required="true"
+                                 requiredMessage="Debe seleccionar el tipo de registro."
+                                 validatorMessage="Debe seleccionar ENTRADA como tipo de registro.">
+                    <f:selectItem itemLabel="ENTRADA" itemValue="ENTRADA" />
+                </p:selectOneMenu>
+            </div>
+            <div class="campo">
+                <p:outputLabel for="observacion" value="Observación (opcional)" />
+                <p:inputTextarea validator="#{registroBean.validarObservacion}" id="observacion" value="#{registroBean.observacion}" rows="3" cols="45"
+                                 maxlength="200" autoResize="false"
+                                 validatorMessage="La observación no puede exceder 200 caracteres.">
+                    <f:validateLength maximum="200" />
+                </p:inputTextarea>
+            </div>
+            <p:commandButton id="registrar" value="Registrar entrada" action="#{registroBean.registrar}"
+                             process="@this campos" update="mensajes registros" />
+        </p:panel>
+        <h2>Registros de asistencia</h2>
+    <p:dataTable id="registros" value="#{registroBean.registros}" var="registro"
+                 emptyMessage="No existen registros de asistencia." paginator="true" rows="10"
+                 paginatorAlwaysVisible="false" reflow="true">
+        <p:column headerText="ID"><h:outputText value="#{registro.idRegistro}" /></p:column>
+        <p:column headerText="Sesión"><h:outputText value="#{registro.nombreSesion}" /></p:column>
+        <p:column headerText="Participante"><h:outputText value="#{registro.nombreParticipante}" /></p:column>
+        <p:column headerText="Tipo"><h:outputText value="#{registro.tipoRegistro}" /></p:column>
+        <p:column headerText="Fecha y hora"><h:outputText value="#{registro.fechaHora}">
+            <f:convertDateTime type="localDateTime" pattern="dd/MM/yyyy HH:mm:ss" />
+        </h:outputText></p:column>
+        <p:column headerText="Observación"><h:outputText value="#{empty registro.observacion ? 'Sin observación' : registro.observacion}" /></p:column>
+    </p:dataTable>
+    </h:form>
+</h:body>
+</html>
