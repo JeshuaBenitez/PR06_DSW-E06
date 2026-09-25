@@ -24,7 +24,7 @@ if (¿Conversión y validación correctas?) then (sí)
     UNIQUE protege también de inserciones simultáneas.
   end note
 else (no)
-  #MistyRose:Guardar mensajes de validación;\nsaltar las fases 4 y 5;\nNO ejecutar registrar() ni insertar;
+  :Guardar mensajes de validación;\nsaltar las fases 4 y 5;\nNO ejecutar registrar() ni insertar;
 endif
 :6. Render Response\nRenderizar mensajes y tabla;
 note right
