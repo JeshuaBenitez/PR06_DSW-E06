@@ -1,0 +1,24 @@
+/* Estilos compartidos para los componentes PrimeFaces; sin librerías adicionales. */
+body { font-family: sans-serif; margin: 2rem; }
+nav { margin-bottom: 1.5rem; }
+body .p03-menu .ui-tabmenu-nav { display: flex; flex-wrap: wrap; gap: .5rem; }
+body .p03-menu .ui-tabmenu-nav .ui-tabmenuitem { margin: 0; float: none; }
+body .p03-menu .ui-tabmenu-nav .ui-menuitem-link { white-space: normal; }
+.p03-formulario { width: 100%; max-width: 650px; box-sizing: border-box; }
+.campo { margin-bottom: 1rem; min-width: 0; }
+.campo label { display: block; margin-bottom: .4rem; }
+body .campo .ui-selectonemenu, body .campo textarea {
+    width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box;
+}
+body .campo .ui-selectonemenu-label { overflow: hidden; text-overflow: ellipsis; }
+body .ui-selectonemenu-panel { max-width: calc(100vw - 2rem); }
+body .ui-selectonemenu-panel .ui-selectonemenu-item { white-space: normal; overflow-wrap: anywhere; }
+.p03-tabla { margin-top: 1rem; }
+body .p03-tabla td { overflow-wrap: anywhere; }
+@media (max-width: 640px) {
+    body { margin: 1rem; }
+    h1 { font-size: 1.6rem; overflow-wrap: anywhere; }
+    body .p03-menu .ui-tabmenu-nav .ui-tabmenuitem { flex: 1 1 calc(50% - .5rem); }
+    body .p03-menu .ui-tabmenu-nav .ui-menuitem-link { width: 100%; box-sizing: border-box; }
+    body .p03-tabla.ui-datatable-reflow .ui-datatable-data > tr > td { white-space: normal; }
+}

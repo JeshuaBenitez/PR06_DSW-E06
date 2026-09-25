@@ -1,0 +1,43 @@
+@startuml
+!theme plain
+skinparam shadowing false
+skinparam dpi 150
+title PR06 P03 — Ciclo de vida JSF 2.3\nEnvío AJAX de Registrar entrada (sin immediate)
+start
+:1. Restore View\nRestaurar componentes y estado de vista;
+:2. Apply Request Values\nDecodificar los valores enviados;
+note right
+  process="@this campos"
+  partialSubmit="true"
+  Se procesan el botón y sus campos.
+end note
+:3. Process Validations\nConversión de IDs, required, validadores\ny máximo de 200 caracteres;
+if (¿Conversión y validación correctas?) then (sí)
+  :4. Update Model Values\nActualizar propiedades de RegistroBean;
+  :5. Invoke Application\nEjecutar RegistroBean.registrar();
+  note right
+    Revalidar datos contra PostgreSQL mediante DAO.
+    Rechazar duplicados sin insertar.
+    Si es válido: insertar ENTRADA con JDBC,
+    agregar mensaje de éxito y consultar registros.
+    Si falla: mostrar un mensaje comprensible.
+    UNIQUE protege también de inserciones simultáneas.
+  end note
+else (no)
+  #MistyRose:Guardar mensajes de validación;\nsaltar las fases 4 y 5;\nNO ejecutar registrar() ni insertar;
+endif
+:6. Render Response\nRenderizar mensajes y tabla;
+note right
+  update="mensajes registros"
+  JSF devuelve una respuesta parcial XML.
+  PrimeFaces actualiza esos componentes
+  sin recargar el documento completo.
+end note
+stop
+legend bottom
+  Se muestra el postback del formulario, no la carga inicial GET.
+  Los campos inválidos desvían el flujo desde Process Validations.
+  El duplicado es una regla de negocio de Invoke Application.
+  f:viewAction carga opciones y registros al abrir la vista.
+endlegend
+@enduml

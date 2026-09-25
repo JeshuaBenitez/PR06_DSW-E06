@@ -1,0 +1,89 @@
+@startuml
+!theme plain
+left to right direction
+skinparam linetype ortho
+skinparam shadowing false
+skinparam dpi 150
+hide circle
+hide methods
+title PR06 — Modelo relacional de PostgreSQL\nP03 conserva el esquema de P02
+
+entity "sesion" as sesion {
+  * id_sesion : SERIAL <<PK>>
+  --
+  * nombre : VARCHAR(100)
+  * fecha : DATE
+  * hora_inicio : TIME
+  * hora_fin : TIME
+  estado : VARCHAR(20)
+  descripcion : VARCHAR(200)
+}
+entity "participante" as participante {
+  * id_participante : SERIAL <<PK>>
+  --
+  * codigo_ficticio : VARCHAR(30) <<UNIQUE>>
+  * nombre : VARCHAR(80)
+  * apellido : VARCHAR(80)
+  estado : VARCHAR(20)
+}
+entity "registro" as registro {
+  * id_registro : SERIAL <<PK>>
+  --
+  * id_sesion : INT <<FK>>
+  * id_participante : INT <<FK>>
+  * tipo_registro : VARCHAR(20)
+  fecha_hora : TIMESTAMP = CURRENT_TIMESTAMP
+  observacion : VARCHAR(200)
+}
+entity "incidencia" as incidencia {
+  * id_incidencia : SERIAL <<PK>>
+  --
+  * id_registro : INT <<FK>>
+  tipo_incidencia : VARCHAR(30)
+  descripcion : VARCHAR(200)
+  justificacion : VARCHAR(200)
+  fecha_hora : TIMESTAMP = CURRENT_TIMESTAMP
+}
+entity "dispositivo" as dispositivo {
+  * id_dispositivo : SERIAL <<PK>>
+  --
+  * identificador_ficticio : VARCHAR(30) <<UNIQUE>>
+  * nombre : VARCHAR(80)
+  tipo : VARCHAR(40)
+  estado : VARCHAR(20)
+}
+entity "evento" as evento {
+  * id_evento : SERIAL <<PK>>
+  --
+  * id_dispositivo : INT <<FK>>
+  * id_sesion : INT <<FK>>
+  id_participante : INT <<FK, NULL>>
+  tipo_evento : VARCHAR(30)
+  fecha_hora : TIMESTAMP = CURRENT_TIMESTAMP
+  detalle : VARCHAR(200)
+}
+sesion ||--o{ registro
+participante ||--o{ registro
+registro ||--o{ incidencia
+dispositivo ||--o{ evento
+sesion ||--o{ evento
+participante |o--o{ evento
+
+note bottom of registro
+  UNIQUE (id_sesion, id_participante, tipo_registro)
+  P03 admite ENTRADA en la aplicación.
+  El SQL no define un CHECK para el tipo.
+end note
+note bottom of incidencia
+  justificacion permite NULL en schema.sql.
+  No hay flujo de correcciones en P03.
+end note
+legend bottom
+  Fuente: schema.sql del repositorio PR06.
+  Campos con marcador = NOT NULL (también implícito en PK).
+  Sin marcador = permite NULL; DEFAULT no implica NOT NULL.
+  || = exactamente uno; |o = cero o uno; o{ = cero o muchos.
+  incidencia, dispositivo y evento se conservan en el modelo;
+  no representan funcionalidades implementadas en P03.
+endlegend
+@enduml

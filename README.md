@@ -487,3 +487,26 @@ Problemas encontrados y resueltos:
 
 No se modificaron los DAO, scripts SQL, JSP, servlets ni el cambio local de
 `ConexionDB.java`. No se incorporaron funcionalidades fuera del alcance P03.
+
+### Navegación y adaptación responsive (2026-09-23)
+
+Las cuatro vistas P03 comparten `p:tabMenu`, con iconos y pestaña activa según
+la vista. En móviles las pestañas se distribuyen en varias filas. Las tablas
+usan el modo `reflow` del Showcase de PrimeFaces: apilan los campos para
+conservar toda la información en pantallas pequeñas. La paginación permite
+seleccionar 5, 10 o 20 filas.
+
+`resources/css/p03.css` contiene los ajustes compartidos de tamaño y separación.
+No se añadieron dependencias, frameworks CSS ni librerías UI.
+
+Los botones **Actualizar sesiones** y **Actualizar registros** consultan los DAO
+existentes con `process="@this"` y actualizan solamente mensajes y tabla.
+**Registrar entrada** procesa sus campos y actualiza mensajes y registros.
+Estas acciones usan `partialSubmit="true"`; la paginación utiliza el AJAX propio
+de PrimeFaces. El TabMenu navega entre los XHTML mediante GET: cambiar de vista
+sí carga otro documento; las operaciones dentro de las vistas son parciales.
+
+Verificación: **VERIFICADO** en Tomcat 9 con Java 11, a 375 y 1280 píxeles,
+sin desbordamiento horizontal en las cuatro vistas. Las actualizaciones de
+consulta, el envío incompleto y el rechazo de duplicado devolvieron respuestas
+JSF parciales sin cambiar el documento. Maven package: **BUILD SUCCESS**.

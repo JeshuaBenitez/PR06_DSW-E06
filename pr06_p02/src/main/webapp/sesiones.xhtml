@@ -7,28 +7,28 @@
 <h:head>
     <title>Consultar sesiones</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <style>
-        body { font-family: sans-serif; margin: 2rem; }
-        nav a { display: inline-block; margin: 0 1rem 1rem 0; }
-        .campo { margin-bottom: 1rem; }
-        .campo label { display: block; margin-bottom: .4rem; }
-        .campo .ui-selectonemenu, .campo textarea { max-width: 100%; }
-        .ui-datatable { margin-top: 1rem; }
-    </style>
+    <h:outputStylesheet library="css" name="p03.css" />
 </h:head>
 <h:body>
     <h1>Consultar sesiones</h1>
     <nav aria-label="Navegación principal">
-        <h:link outcome="index" value="Inicio" />
-        <h:link outcome="sesiones" value="Consultar sesiones" />
-        <h:link outcome="registro" value="Registrar asistencia" />
-        <h:link outcome="registros" value="Consultar registros" />
+        <p:tabMenu activeIndex="1" styleClass="p03-menu">
+            <p:menuitem outcome="index" value="Inicio" icon="pi pi-home" />
+            <p:menuitem outcome="sesiones" value="Sesiones" icon="pi pi-calendar" />
+            <p:menuitem outcome="registro" value="Registrar asistencia" icon="pi pi-user-plus" />
+            <p:menuitem outcome="registros" value="Registros" icon="pi pi-list" />
+        </p:tabMenu>
     </nav>
     <h:form id="sesionesForm">
         <p:messages id="mensajes" showDetail="false" />
+        <p:commandButton id="actualizar" value="Actualizar sesiones" icon="pi pi-refresh"
+                         action="#{registroBean.cargarSesiones}" process="@this"
+                         update="mensajes sesiones" partialSubmit="true" />
         <p:dataTable id="sesiones" value="#{registroBean.sesiones}" var="sesion"
                      emptyMessage="No existen sesiones registradas." paginator="true" rows="10"
-                     paginatorAlwaysVisible="false" reflow="true">
+                     paginatorAlwaysVisible="false" paginatorPosition="bottom" reflow="true"
+                 rowsPerPageTemplate="5,10,20" paginatorTemplate="{PreviousPageLink} {PageLinks} {NextPageLink} {RowsPerPageDropdown}"
+                 styleClass="p03-tabla">
             <p:column headerText="ID"><h:outputText value="#{sesion.idSesion}" /></p:column>
             <p:column headerText="Nombre"><h:outputText value="#{sesion.nombre}" /></p:column>
             <p:column headerText="Fecha"><h:outputText value="#{sesion.fecha}">
