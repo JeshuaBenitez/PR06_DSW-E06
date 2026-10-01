@@ -1,0 +1,269 @@
+openapi: 3.0.3
+info:
+  title: PR06 — API REST propuesta P04
+  version: 0.1.0
+  description: 'Contrato de diseño pendiente de implementación. El proyecto actual
+    es JSF/PrimeFaces con DAO JDBC. No describe endpoints ya disponibles. Alcance:
+    consultas y registro de ENTRADA.'
+servers:
+- url: http://localhost:8080/api
+  description: Servidor local propuesto, pendiente de implementación; no es el contexto
+    actual /pr06_p02.
+paths:
+  /sesiones:
+    get:
+      operationId: listarSesions
+      summary: Consultar sesiones
+      description: Ordenadas por fecha y hora de inicio.
+      responses:
+        '200':
+          description: Consulta correcta; devuelve [] si no hay resultados.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sesion'
+        '500':
+          description: Fallo interno al consultar.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /participantes:
+    get:
+      operationId: listarParticipantes
+      summary: Consultar participantes activos
+      description: Solo participantes con estado ACTIVO, ordenados por nombre y apellido.
+      responses:
+        '200':
+          description: Consulta correcta; devuelve [] si no hay resultados.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Participante'
+        '500':
+          description: Fallo interno al consultar.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /registros:
+    get:
+      operationId: listarRegistros
+      summary: Consultar registros de asistencia
+      description: Ordenados por fechaHora descendente; nombres obtenidos de sesión
+        y participante.
+      responses:
+        '200':
+          description: Consulta correcta; devuelve [] si no hay resultados.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Registro'
+        '500':
+          description: Fallo interno al consultar.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: registrarEntrada
+      summary: Registrar una entrada
+      description: 'Propuesta: validar referencias existentes y participante activo;
+        aceptar solo ENTRADA. Recortar espacios de observación y convertir texto vacío
+        a null. No insertar ante error. Proteger duplicados mediante UNIQUE, incluso
+        con concurrencia. Responder 201 solo después de confirmar la transacción.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistroEntrada'
+            example:
+              idSesion: 1
+              idParticipante: 4
+              tipoRegistro: ENTRADA
+              observacion: Evidencia P04
+      responses:
+        '201':
+          description: Entrada persistida con ID y fechaHora asignados por el servidor/BD.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Registro'
+        '400':
+          description: JSON o campos inválidos, observación demasiado larga o participante
+            inactivo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: La sesión o el participante referenciado no existe.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Ya existe el mismo tipo de registro para sesión y participante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Fallo interno durante el registro.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Sesion:
+      type: object
+      required:
+      - idSesion
+      - nombre
+      - fecha
+      - horaInicio
+      - horaFin
+      - estado
+      - descripcion
+      properties:
+        idSesion:
+          type: integer
+          format: int32
+          minimum: 1
+        nombre:
+          type: string
+          maxLength: 100
+        fecha:
+          type: string
+          format: date
+        horaInicio:
+          type: string
+          example: 09:00:00
+        horaFin:
+          type: string
+          example: '11:00:00'
+        estado:
+          type: string
+          maxLength: 20
+          nullable: true
+        descripcion:
+          type: string
+          maxLength: 200
+          nullable: true
+    Participante:
+      type: object
+      required:
+      - idParticipante
+      - codigoFicticio
+      - nombre
+      - apellido
+      - estado
+      properties:
+        idParticipante:
+          type: integer
+          format: int32
+          minimum: 1
+        codigoFicticio:
+          type: string
+          maxLength: 30
+        nombre:
+          type: string
+          maxLength: 80
+        apellido:
+          type: string
+          maxLength: 80
+        estado:
+          type: string
+          maxLength: 20
+          nullable: true
+    Registro:
+      type: object
+      required:
+      - idRegistro
+      - idSesion
+      - idParticipante
+      - nombreSesion
+      - nombreParticipante
+      - tipoRegistro
+      - fechaHora
+      - observacion
+      properties:
+        idRegistro:
+          type: integer
+          format: int32
+          minimum: 1
+        idSesion:
+          type: integer
+          format: int32
+          minimum: 1
+        idParticipante:
+          type: integer
+          format: int32
+          minimum: 1
+        nombreSesion:
+          type: string
+          maxLength: 100
+        nombreParticipante:
+          type: string
+          maxLength: 161
+        tipoRegistro:
+          type: string
+          maxLength: 20
+        fechaHora:
+          type: string
+          nullable: true
+          pattern: ^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?$
+          example: '2026-09-24T20:44:09.532724'
+          description: Fecha y hora local sin zona, correspondiente a TIMESTAMP de
+            PostgreSQL.
+        observacion:
+          type: string
+          maxLength: 200
+          nullable: true
+    RegistroEntrada:
+      type: object
+      required:
+      - idSesion
+      - idParticipante
+      - tipoRegistro
+      properties:
+        idSesion:
+          type: integer
+          format: int32
+          minimum: 1
+        idParticipante:
+          type: integer
+          format: int32
+          minimum: 1
+        tipoRegistro:
+          type: string
+          enum:
+          - ENTRADA
+        observacion:
+          type: string
+          maxLength: 200
+          nullable: true
+    Error:
+      type: object
+      required:
+      - codigo
+      - mensaje
+      properties:
+        codigo:
+          type: string
+          enum:
+          - DATOS_INVALIDOS
+          - REFERENCIA_NO_ENCONTRADA
+          - REGISTRO_DUPLICADO
+          - ERROR_INTERNO
+        mensaje:
+          type: string
+          description: Mensaje comprensible sin SQL, trazas ni credenciales.

@@ -1,0 +1,89 @@
+@startuml modelo_datos_pr06
+title PR06 — Modelo relacional real de schema.sql
+hide circle
+skinparam linetype ortho
+skinparam shadowing false
+entity "sesion" as sesion {
+  * id_sesion : SERIAL <<PK, NOT NULL>>
+  --
+  * nombre : VARCHAR(100) <<NOT NULL>>
+  * fecha : DATE <<NOT NULL>>
+  * hora_inicio : TIME <<NOT NULL>>
+  * hora_fin : TIME <<NOT NULL>>
+    estado : VARCHAR(20)
+    descripcion : VARCHAR(200)
+}
+entity "participante" as participante {
+  * id_participante : SERIAL <<PK, NOT NULL>>
+  --
+  * codigo_ficticio : VARCHAR(30) <<NOT NULL, UNIQUE>>
+  * nombre : VARCHAR(80) <<NOT NULL>>
+  * apellido : VARCHAR(80) <<NOT NULL>>
+    estado : VARCHAR(20)
+}
+entity "registro" as registro {
+  * id_registro : SERIAL <<PK, NOT NULL>>
+  --
+  * id_sesion : INT <<FK, NOT NULL>>
+  * id_participante : INT <<FK, NOT NULL>>
+  * tipo_registro : VARCHAR(20) <<NOT NULL>>
+    fecha_hora : TIMESTAMP <<DEFAULT CURRENT_TIMESTAMP>>
+    observacion : VARCHAR(200)
+}
+entity "incidencia" as incidencia {
+  * id_incidencia : SERIAL <<PK, NOT NULL>>
+  --
+  * id_registro : INT <<FK, NOT NULL>>
+    tipo_incidencia : VARCHAR(30)
+    descripcion : VARCHAR(200)
+    justificacion : VARCHAR(200)
+    fecha_hora : TIMESTAMP <<DEFAULT CURRENT_TIMESTAMP>>
+}
+entity "dispositivo" as dispositivo {
+  * id_dispositivo : SERIAL <<PK, NOT NULL>>
+  --
+  * identificador_ficticio : VARCHAR(30) <<NOT NULL, UNIQUE>>
+  * nombre : VARCHAR(80) <<NOT NULL>>
+    tipo : VARCHAR(40)
+    estado : VARCHAR(20)
+}
+entity "evento" as evento {
+  * id_evento : SERIAL <<PK, NOT NULL>>
+  --
+  * id_dispositivo : INT <<FK, NOT NULL>>
+  * id_sesion : INT <<FK, NOT NULL>>
+    id_participante : INT <<FK>>
+    tipo_evento : VARCHAR(30)
+    fecha_hora : TIMESTAMP <<DEFAULT CURRENT_TIMESTAMP>>
+    detalle : VARCHAR(200)
+}
+sesion ||--o{ registro : id_sesion
+participante ||--o{ registro : id_participante
+registro ||--o{ incidencia : id_registro
+dispositivo ||--o{ evento : id_dispositivo
+sesion ||--o{ evento : id_sesion
+participante |o--o{ evento : id_participante (opcional)
+note bottom of registro
+  UNIQUE (id_sesion, id_participante, tipo_registro)
+  Impide repetir un tipo de registro para el mismo par.
+  ENTRADA se valida en la aplicación; no existe CHECK SQL.
+end note
+note as mapeoJPA
+  Mapeo JPA propuesto (no implementado):
+  SesionEntity → sesion; ParticipanteEntity → participante
+  RegistroEntity → registro; IncidenciaEntity → incidencia
+  DispositivoEntity → dispositivo; EventoEntity → evento
+  Los atributos físicos y las cardinalidades no cambian.
+  DTOs: RegistroEntradaDTO para solicitudes;
+  SesionDTO, ParticipanteDTO, RegistroDTO y ErrorDTO para respuestas.
+  Los DTOs no son tablas ni agregan relaciones SQL.
+  Angular consume JSON; no accede a las entities JPA.
+end note
+legend bottom
+  * = NOT NULL; los demás atributos admiten NULL.
+  SERIAL = entero autogenerado mediante secuencia, no BIGINT.
+  Las FK no declaran ON DELETE / ON UPDATE especiales.
+  CURRENT_TIMESTAMP es un valor predeterminado, no un NOT NULL.
+  Fuente: schema.sql; contraste con data.sql, modelos y DAO JDBC.
+endlegend
+@enduml

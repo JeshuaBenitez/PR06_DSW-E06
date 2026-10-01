@@ -1,0 +1,59 @@
+@startuml arquitectura_pr06
+title PR06 — Arquitectura objetivo P04 (pendiente de implementación)
+top to bottom direction
+skinparam componentStyle rectangle
+skinparam shadowing false
+skinparam packageStyle rectangle
+actor Usuario as usuario
+package "Navegador / Angular 16" {
+  component "Componentes de página\nInicioComponent\nSesionesComponent\nRegistroComponent\nRegistrosComponent" as paginas
+  component "Microcomponentes reutilizables\nNavegacionComponent\nMensajesComponent\nTablaSesionesComponent\nFormularioEntradaComponent\nTablaRegistrosComponent" as micro
+  component "AsistenciaApiService\nHttpClient" as cliente
+  paginas -right-> micro : Compone / pasa datos (@Input)
+  micro -left-> paginas : Eventos (@Output)
+  paginas -down-> cliente : Consultar / registrar
+  cliente -up-> paginas : Datos / errores
+}
+package "API REST / Spring Boot 2.7.18 / Java 11" {
+  component "Controller REST" as controller
+  component "DTOs de transferencia\nRegistroEntradaDTO (solicitud)\nSesionDTO / ParticipanteDTO\nRegistroDTO / ErrorDTO (respuestas)" as dto
+  component "Service\nValidación de negocio\nConversión DTO ↔ Entity" as service
+  component "Repository / JPA" as repository
+  component "Entities JPA propuestas\nSesionEntity / ParticipanteEntity\nRegistroEntity / IncidenciaEntity\nDispositivoEntity / EventoEntity" as entities
+  controller .right.> dto : Recibe / devuelve
+  controller -down-> service : Solicitud DTO validada
+  service -up-> controller : DTO / error de negocio
+  service .right.> entities : Convierte y opera
+  service -down-> repository : Consultar / persistir entities
+  repository -up-> service : Entities / resultado / excepción
+  repository .right.> entities : Mapea tablas mediante JPA
+}
+database "PostgreSQL 16\nsesion / participante / registro\nincidencia / dispositivo / evento" as db
+usuario -down-> paginas : Interacción
+paginas -up-> usuario : Vista y mensajes
+cliente -down-> controller : HTTP GET / POST\nJSON de solicitud
+controller -up-> cliente : HTTP + JSON de respuesta\n2xx: 200 / 201\n4xx: 400 / 404 / 409; 5xx: 500
+repository -down-> db : SQL mediante JPA
+ db -up-> repository : Filas / resultado / error
+note right of dto
+  DTOs: contrato HTTP, no tablas.
+  Entities: persistencia, no se exponen directamente.
+  Nombres DTO corresponden a los esquemas OpenAPI.
+end note
+note left of service
+  Controller: formato y campos obligatorios.
+  Service: referencias existentes, participante activo,
+  ENTRADA y observación de hasta 200 caracteres.
+  BD: UNIQUE contra duplicados concurrentes.
+  Errores: 400 validación, 404 referencia inexistente,
+  409 duplicado, 500 interno sin detalles sensibles.
+end note
+legend bottom
+  Microcomponentes = componentes Angular pequeños y reutilizables;
+  no son microfrontends ni servicios desplegados por separado.
+  Flechas sólidas: flujo de solicitud / respuesta / eventos.
+  Flechas punteadas: dependencia de tipos y mapeo.
+  Diseño propuesto; implementación actual: JSF/PrimeFaces + JDBC.
+  PostgreSQL 16 es la versión objetivo solicitada.
+endlegend
+@enduml
