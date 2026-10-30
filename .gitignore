@@ -1,12 +1,19 @@
-# Angular
-frontend-angular/.angular/
-frontend-angular/node_modules/
-frontend-angular/dist/
+# Dependencias y productos de compilación
+**/node_modules/
+**/.angular/cache/
+**/dist/
+**/target/
+coverage/
 
-# Spring Boot / Maven
-api-spring/target/
-
-# Secrets
+# Configuración local y secretos
 .env
 .env.*
 !.env.example
+
+# Archivos temporales y registros
+*.log
+*.tmp
+*.temp
+*.swp
+*.swo
+*~

@@ -1,512 +1,183 @@
-# PR06 - Control de asistencia con eventos
+# PR06 — Control de asistencia con eventos
 
-## 1. Descripción
+Proyecto académico de Desarrollo de Sistemas Web para consultar sesiones y participantes, registrar asistencia manual de tipo `ENTRADA`, evitar duplicados y consultar los registros persistidos. P05 reutiliza las reglas funcionales de P02/P03, sin sustituir el legado.
 
-PR06 es un proyecto académico para controlar la asistencia a sesiones mediante eventos. La actividad P02 implementa el primer incremento Web 1.0 y permite consultar sesiones, seleccionar participantes ficticios, registrar manualmente una entrada, rechazar entradas duplicadas y consultar los registros persistidos en PostgreSQL.
+> **Estado de publicación de `pr06-p05`:** el árbol actual de esta rama contiene artefactos generados de Angular, pero no contiene los fuentes, Dockerfiles ni documentación P05. Esos archivos existen en el commit local de `master` `30eaa7c0`. **No publique aún esta rama como una entrega P05 funcional.** Integre primero ese contenido y retire del índice los artefactos generados indicados en [Preparación para GitHub](#preparación-para-github). Las secciones P05 describen la implementación que debe acompañar la rama tras dicha integración.
 
-Datos del documento de evidencia `Capturas de evidencia/PR06_P02.pdf`:
+## Evolución del proyecto
 
-- EE: Desarrollo de sistemas web.
-- NRC: 19559.
-- Académico: Rodriguez Vazquez Gabriel.
-- Autor: DSW-E06.
-- Facultad de Negocios y Tecnologías, Región Orizaba - Córdoba, Universidad Veracruzana.
+| Incremento | Tecnología | Alcance |
+| --- | --- | --- |
+| P02 | JSP, Servlets, JDBC y PostgreSQL | Implementación Web 1.0 original. Permanece en `pr06_p02/`. |
+| P03 | JSF 2.3, PrimeFaces y PostgreSQL | Evolución de interfaz y evidencia histórica. |
+| P05 | Angular 16, Spring Boot y PostgreSQL | API REST, SPA, HTTP Basic local, pruebas y Docker Compose. |
 
-Requerimientos funcionales cubiertos en este incremento:
+`pr06_p02/` conserva P02/P03; `docs/P04/` conserva los contratos y diagramas históricos.
 
-| Requerimiento | Implementación |
+## Arquitectura P05
+
+```text
+Navegador → Angular 16.2.12 + Nginx → /api → Spring Boot 2.7.18 / Java 11 → PostgreSQL 16
+```
+
+Nginx entrega la SPA y reenvía `/api` al backend por la red interna Docker. Spring Boot utiliza JPA/JDBC con `ddl-auto=validate`: valida el esquema, pero no crea ni actualiza tablas.
+
+## Tecnologías
+
+| Componente | Versión / uso |
 | --- | --- |
-| RF01. Sesiones | Consulta de las sesiones almacenadas en PostgreSQL. |
-| RF02. Participantes ficticios | Consulta de participantes con estado `ACTIVO` para el formulario. |
-| RF03. Entrada | Registro manual del tipo `ENTRADA`, con validación de datos y duplicados. |
-| RF04 / RF07. Persistencia del modelo mínimo | Persistencia JDBC de sesiones, participantes y registros de asistencia. En el acta del PDF aparece como `RF04`; en la matriz de trazabilidad aparece como `RF07`. |
+| Java / Spring Boot | 11 / 2.7.18 |
+| Angular / Angular CLI | 16.2.12 |
+| Node.js / npm | 18.20.8 / 10.8.2 en la verificación documentada |
+| TypeScript / RxJS | 5.1.x / 7.8.x |
+| PostgreSQL | 16 para Docker |
+| OpenAPI | 3.0.3 |
 
-## 2. Tecnologías utilizadas
+La evidencia local histórica se ejecutó en PostgreSQL 18.6; debe repetirse en PostgreSQL 16 si se exige certificación exacta del perfil docente.
 
-| Tecnología | Versión o uso |
-| --- | --- |
-| Java | 11, configurado como versión de compilación |
-| Maven | Construcción y empaquetado WAR |
-| JSP | Presentación de las vistas web |
-| Servlets | Servlet 4.0 con `javax.servlet-api` 4.0.1 |
-| Tomcat | 9.0.121 |
-| PostgreSQL | Base de datos relacional `pr06_p02` |
-| JDBC | Driver PostgreSQL 42.7.2 |
+## Funcionalidades P05
 
-El artefacto Maven del proyecto tiene la versión `1.0-SNAPSHOT` y utiliza empaquetado `war`.
+- Salud, sesiones, participantes activos y registros mediante consultas públicas.
+- Registro manual exclusivamente de `ENTRADA`.
+- Validación de IDs positivos, referencias existentes, participante `ACTIVO` y observación opcional de hasta 200 caracteres antes de recortar espacios.
+- Rechazo de duplicados; PostgreSQL conserva una restricción `UNIQUE` como protección final de concurrencia.
+- Cambio protegido de estado: `PROGRAMADA → EN_CURSO`, `PROGRAMADA → CANCELADA` y `EN_CURSO → FINALIZADA`.
+- HTTP Basic local y sin sesión para `POST /api/registros` y `PATCH /api/sesiones/{idSesion}/estado`; los `GET` son públicos.
+- Errores JSON con `codigo` y `mensaje`, sin SQL, trazas ni secretos.
 
-## 3. Requisitos previos
+No se implementan `SALIDA`, edición o eliminación de registros, JWT, OAuth ni usuarios persistentes.
 
-Para ejecutar el proyecto se necesita:
-
-- JDK 11.
-- Maven.
-- PostgreSQL en ejecución y un usuario con permisos para crear la base y sus tablas.
-- Apache Tomcat 9.
-
-VS Code con las extensiones de Maven y Servers fue el entorno utilizado durante el desarrollo, pero no es obligatorio para compilar el proyecto.
-
-## 4. Estructura del proyecto
+## Estructura esperada tras integrar P05
 
 ```text
 PR06/
-├── .github/
-├── Capturas de evidencia/
-├── pr06_p02/
-│   ├── pom.xml
-│   ├── src/main/
-│   │   ├── java/com/pr06/asistencia/
-│   │   │   ├── model/
-│   │   │   ├── dao/
-│   │   │   └── servlet/
-│   │   └── webapp/
-│   │       ├── WEB-INF/web.xml
-│   │       └── archivos JSP
-│   └── target/pr06_p02.war
-├── schema.sql
-├── data.sql
-└── README.md
+├── pr06_p02/                 # P02/P03
+├── api-spring/               # Backend Spring Boot P05
+├── frontend-angular/          # SPA Angular P05
+├── docs/P04/                 # Histórico
+├── docs/P05/                 # OpenAPI, decisiones y evidencias E2E
+├── schema.sql y data.sql      # Esquema y datos ficticios reutilizados
+├── compose.yaml               # Frontend + backend + PostgreSQL Docker
+└── .env.example              # Plantilla sin secretos
 ```
 
-- `model/`: clases que representan sesiones, participantes y registros.
-- `dao/`: acceso a PostgreSQL mediante JDBC y sentencias preparadas.
-- `servlet/`: controladores para las peticiones HTTP y el envío de datos a las vistas.
-- `webapp/`: páginas JSP y descriptor de despliegue Servlet 4.0.
-- `Capturas de evidencia/`: evidencias de ejecución y pruebas manuales.
+## Requisitos y variables de entorno
 
-El directorio `target/` y el WAR se generan durante la compilación.
+Para Docker se necesita Docker Engine con Docker Compose y los puertos `4200`, `8080` y `5433` disponibles (o valores alternativos). Para ejecución individual: JDK 11, Maven, Node.js 18 y PostgreSQL accesible.
 
-## 5. Preparación de PostgreSQL
-
-Desde la raíz `PR06/`, abrir el cliente de PostgreSQL:
+Tras integrar P05, cree la configuración local:
 
 ```bash
-psql -U postgres
+cp .env.example .env
 ```
 
-Dentro de `psql`, crear la base, conectarse y ejecutar los scripts:
+Complete sólo en `.env` las contraseñas de PostgreSQL y HTTP Basic. Ese archivo está ignorado por Git. Nunca publique contraseñas, encabezados `Authorization` ni URLs con credenciales.
 
-```sql
-CREATE DATABASE pr06_p02;
-\connect pr06_p02
-\i schema.sql
-\i data.sql
-```
+Variables Docker: `PR06_DOCKER_DB_NAME`, `PR06_DOCKER_DB_USER`, `PR06_DOCKER_DB_PASSWORD`, `PR06_DOCKER_BASIC_USER`, `PR06_DOCKER_BASIC_PASSWORD`, `PR06_FRONTEND_PORT`, `PR06_BACKEND_PORT` y `PR06_DB_PORT`.
 
-`schema.sql` crea las entidades `sesion`, `participante`, `registro`, `incidencia`, `dispositivo` y `evento`. El flujo funcional de P02 utiliza principalmente `sesion`, `participante` y `registro`.
+## Ejecución integrada con Docker Compose
 
-El modelo contempla las siguientes entidades:
-
-- `sesion`: evento o sesión donde se registra asistencia.
-- `participante`: persona ficticia cuya asistencia será registrada.
-- `registro`: entrada o salida asociada a una sesión y a un participante.
-- `incidencia`: problema o ajuste asociado a un registro.
-- `dispositivo`: fuente de captura prevista para la evolución del proyecto.
-- `evento`: evento manual o simulado para trazabilidad futura.
-
-Para comprobar los datos iniciales:
-
-```sql
-SELECT * FROM sesion;
-SELECT * FROM participante;
-```
-
-## 6. Configuración de la conexión
-
-La conexión se encuentra en `pr06_p02/src/main/java/com/pr06/asistencia/dao/ConexionDB.java`. Actualmente utiliza constantes Java y se conecta a:
-
-```text
-jdbc:postgresql://localhost:5432/pr06_p02
-```
-
-El usuario configurado es `postgres`. Antes de compilar, las credenciales deben ajustarse a la instalación local de PostgreSQL. La configuración conceptual es:
-
-```text
-USER = "postgres"
-PASSWORD = "TU_CONTRASEÑA"
-```
-
-La contraseña local real no se documenta ni debe publicarse en el repositorio. La clase carga el controlador `org.postgresql.Driver` y proporciona las conexiones utilizadas por los DAO.
-
-## 7. Compilación y empaquetado
-
-El proyecto Maven está dentro de `pr06_p02/`. Desde la raíz del repositorio se puede compilar con:
+Con `.env` completado y el contenido P05 integrado:
 
 ```bash
-mvn clean package -f pr06_p02/pom.xml
+docker compose up -d --build
 ```
 
-La forma equivalente entrando al módulo es:
-
-```bash
-cd pr06_p02
-mvn clean package
-```
-
-El resultado esperado es:
-
-```text
-pr06_p02/target/pr06_p02.war
-```
-
-Desde la extensión Maven de VS Code también se utilizaron, en orden, los objetivos `clean`, `validate`, `compile` y `package`.
-
-## 8. Despliegue en Tomcat 9
-
-La aplicación fue probada en Tomcat 9.0.121 con el WAR generado por Maven.
-
-Procedimiento utilizado en VS Code:
-
-1. Compilar y generar `pr06_p02/target/pr06_p02.war`.
-2. Iniciar Tomcat 9 desde la vista **Servers**.
-3. Seleccionar `pr06_p02.war`.
-4. Ejecutar **Run on Server**.
-5. Comprobar que el contexto desplegado sea `/pr06_p02`.
-
-Si ya hay una versión desplegada y los cambios no aparecen, se debe retirar esa publicación desde **Servers** y volver a ejecutar **Run on Server** sobre el WAR recién generado.
-
-## 9. Verificación de conexión
-
-Abrir:
-
-```text
-http://localhost:8080/pr06_p02/health
-```
-
-Resultado esperado:
-
-```text
-OK - Conexion a PostgreSQL establecida
-```
-
-## 10. Uso del sistema
-
-Recorrido principal:
-
-1. Abrir `http://localhost:8080/pr06_p02/`.
-2. Entrar a **Consultar sesiones**.
-3. Regresar al inicio o usar el enlace **Registrar asistencia**.
-4. Seleccionar una sesión existente.
-5. Seleccionar un participante activo.
-6. Escribir una observación opcional.
-7. Pulsar **Registrar entrada**. El tipo registrado es `ENTRADA`.
-8. Entrar a **Consultar registros de asistencia** para verificar la persistencia.
-
-Rutas disponibles:
-
-| Ruta | Propósito |
+| Servicio | URL |
 | --- | --- |
-| `/pr06_p02/` | Página principal y navegación. |
-| `/pr06_p02/health` | Comprobación de la conexión PostgreSQL. |
-| `/pr06_p02/sesiones` | Consulta de sesiones. |
-| `/pr06_p02/registro` | Formulario y registro manual de una entrada. |
-| `/pr06_p02/registros` | Consulta de registros persistidos. |
+| Angular | http://localhost:4200 |
+| API directa | http://localhost:8080/api/health |
+| Salud por proxy Angular | http://localhost:4200/api/health |
+| PostgreSQL local | localhost:5433 |
 
-## 11. Datos de prueba
+Para detener sin borrar datos:
 
-`data.sql` contiene datos ficticios para probar el incremento. Entre ellos se encuentran:
-
-- Las sesiones `Sesion de bienvenida` y `Taller de desarrollo web`.
-- Los participantes `P001 - Ana Lopez`, `P002 - Carlos Martinez`, `P003 - Laura Hernandez` y `P004 - Miguel Torres`, todos con estado `ACTIVO`.
-- El dispositivo ficticio `D001`, que forma parte del modelo de datos pero no del flujo funcional de P02.
-
-El script no inserta registros de asistencia; estos se generan desde `/registro`.
-
-## 12. Pruebas realizadas
-
-| Caso | Tipo | Prueba | Estado | Resultado obtenido |
-| --- | --- | --- | --- | --- |
-| PP01 | Positiva | Consulta de sesiones | VERIFICADO | Se mostraron correctamente las sesiones almacenadas en la base de datos. |
-| PP02 | Positiva | Registro de entrada válido | VERIFICADO | Se mostró `Entrada registrada correctamente.` y el registro fue almacenado. |
-| PN01 | Negativa | Entrada duplicada | VERIFICADO | Se rechazó la segunda entrada del mismo participante para la misma sesión y tipo `ENTRADA`. |
-| PN02 | Negativa | Sesión inválida | VERIFICADO | Se manipuló `id_sesion = 9999`; el sistema mostró `Debe seleccionar una sesión válida.` y no modificó PostgreSQL. |
-| PR01 | Recorrido principal | Registro y comprobación de persistencia | VERIFICADO | El registro apareció en `/registros` y coincidió con la consulta directa `SELECT * FROM registro;`. |
-
-Las evidencias visuales de estas pruebas se encuentran en `Capturas de evidencia/`, incluyendo el documento `PR06_P02.pdf`.
-
-Para comprobar directamente los registros:
-
-```sql
-SELECT *
-FROM registro
-ORDER BY id_registro;
+```bash
+docker compose stop
+# o
+docker compose down
 ```
 
-Matriz de trazabilidad documentada:
+El volumen `pr06_p05_postgres_data` conserva la base Docker. `docker compose down -v` elimina ese volumen y sus datos; úselo sólo para una reinicialización deliberada. `schema.sql` y `data.sql` se ejecutan únicamente en la primera inicialización de un volumen vacío.
 
-| RF | Implementación | Prueba asociada | Evidencia |
+```bash
+docker compose logs -f
+docker compose logs -f backend
+docker compose logs -f db
+```
+
+## HTTP Basic, sesiones y registros
+
+La SPA mantiene las credenciales únicamente en memoria y las usa sólo contra el origen local configurado. HTTP Basic sin TLS es adecuado sólo para laboratorio local; en producción requiere HTTPS y una solución de identidad apropiada.
+
+Flujo: consultar sesiones y participantes activos, introducir credenciales locales, crear una `ENTRADA`, consultar registros y comprobar que una repetición devuelve `409`. El estado de sesión no condiciona el registro de `ENTRADA`, por compatibilidad con P02/P03.
+
+## API REST
+
+El prefijo es `/api`. El contrato fuente, al integrar P05, es `docs/P05/openapi.yaml`.
+
+| Método | Ruta | Acceso | Respuestas principales |
 | --- | --- | --- | --- |
-| RF01 | `SesionServlet`, `SesionDAO`, `sesiones.jsp` | PP01 | Captura de listado de sesiones. |
-| RF02 | `ParticipanteDAO`, `registro.jsp` | PP02 | Selector de participantes. |
-| RF03 | `RegistroServlet`, `RegistroDAO` | PP02, PN01, PN02 | Registro válido y validaciones. |
-| RF07 | JDBC y PostgreSQL | PR01 | `/registros` y consulta SQL. |
+| `GET` | `/api/health` | Público | `200`, `503`, `500` |
+| `GET` | `/api/sesiones` | Público | `200`, `500` |
+| `GET` | `/api/participantes` | Público | `200`, `500` |
+| `GET` | `/api/registros` | Público | `200`, `500` |
+| `POST` | `/api/registros` | HTTP Basic | `201`, `400`, `401`, `404`, `409`, `500` |
+| `PATCH` | `/api/sesiones/{idSesion}/estado` | HTTP Basic | `200`, `400`, `401`, `404`, `409`, `500` |
 
-## 13. Flujo principal
+La salud devuelve `503` si PostgreSQL no está disponible. Las respuestas negativas exponen sólo `codigo` y `mensaje`.
 
-```text
-Consultar sesiones
-    → Seleccionar sesión
-    → Seleccionar participante
-    → Registrar entrada
-    → Persistir en PostgreSQL
-    → Mostrar registro realizado
-    → Consultar registros persistidos
-```
+## Persistencia PostgreSQL
 
-La restricción `UNIQUE (id_sesion, id_participante, tipo_registro)` de PostgreSQL complementa la validación de duplicados realizada por la aplicación.
+Docker usa una base nueva (`pr06_p05_docker` por defecto) dentro de un volumen exclusivo. No se conecta a `pr06_p02` ni a bases aisladas históricas. Los montajes de `schema.sql` y `data.sql` son de sólo lectura y usan `:Z` en SELinux para que PostgreSQL pueda leerlos sin ampliar permisos Unix.
 
-## 14. Restricciones y alcance
+## Compilación individual
 
-- Se utilizan participantes y datos ficticios.
-- No se utilizan datos escolares reales.
-- No se recopilan datos biométricos ni geolocalización.
-- No existen sanciones automáticas ni integraciones externas.
-- P02 se limita al primer incremento Web 1.0.
-- El flujo implementado registra solamente `ENTRADA`.
-- La salida, incidencias, correcciones, dispositivo y eventos simulados no forman parte del flujo funcional implementado en P02.
-
-Aunque `incidencia`, `dispositivo` y `evento` existen en el modelo SQL, su funcionalidad web todavía no está implementada.
-
-## 15. Estado del proyecto
-
-- Compilación Maven: **VERIFICADO**.
-- Generación WAR: **VERIFICADO**.
-- Despliegue Tomcat 9: **VERIFICADO**.
-- Conexión PostgreSQL: **VERIFICADO**.
-- Consulta de sesiones: **VERIFICADO**.
-- Registro de entrada: **VERIFICADO**.
-- Validaciones: **VERIFICADO**.
-- Persistencia: **VERIFICADO**.
-
-## 16. Limitaciones
-
-- El sistema solo registra entradas manuales; no registra salidas.
-- No incluye edición ni eliminación de registros.
-- No existe autenticación ni administración de usuarios en este incremento.
-- La configuración JDBC debe ajustarse manualmente al PostgreSQL local antes de compilar.
-- La interfaz JSP es sencilla y está enfocada en demostrar el flujo funcional.
-- Las pruebas documentadas son manuales; el repositorio no contiene una suite de pruebas automatizadas para este incremento.
-
-## 17. Incremento P03 — JSF y PrimeFaces
-
-P03 conserva el flujo de P02 y evoluciona su presentación a JSF 2.3 y
-PrimeFaces 12: consultar sesiones, registrar una ENTRADA de un participante
-ficticio activo y consultar los registros persistidos. No incorpora salidas,
-edición, eliminación ni nuevas entidades. Los JSP y servlets de P02 permanecen.
-Las secciones anteriores describen P02 y sus verificaciones históricas; los
-resultados específicos de P03 se documentan al final de esta sección.
-
-### Tecnologías y requisitos
-
-- Java 11, Maven, WAR y Tomcat 9 (verificación local con Tomcat 9.0.121).
-- JSF 2.3: Apache MyFaces API e implementación 2.3.10.
-- PrimeFaces 12.0.0, variante `javax` sin clasificador Jakarta.
-- JAXB API 2.3.1: MyFaces requiere `DatatypeConverter` para el estado de vista;
-  esa clase ya no forma parte del JDK 11.
-- PostgreSQL y JDBC existentes, sin cambios al modelo ni a los DAO.
-
-`RegistroBean` utiliza `javax.faces.bean.ManagedBean` y
-`javax.faces.bean.ViewScoped`, disponibles aunque deprecados en JSF 2.3.
-No requiere un contenedor CDI adicional. El bean y los modelos que almacena
-son serializables; las conexiones y los DAO no se almacenan en el estado de vista.
-
-### Base de datos
-
-Desde la raíz del repositorio, únicamente para una instalación nueva:
+Backend, con JDK 11:
 
 ```bash
-psql -h localhost -U postgres -d postgres
+JAVA_HOME=/ruta/al/jdk-11 PATH=/ruta/al/jdk-11/bin:$PATH \
+  mvn -f api-spring/pom.xml clean package
 ```
 
-```sql
-CREATE DATABASE pr06_p02;
-\connect pr06_p02
-\i schema.sql
-\i data.sql
-SELECT * FROM sesion;
-SELECT * FROM participante;
-\q
-```
-
-Si la base ya está preparada, no repetir los scripts: no son idempotentes.
-La conexión sigue configurada en
-`pr06_p02/src/main/java/com/pr06/asistencia/dao/ConexionDB.java`.
-Conservar las credenciales locales correctas; `.env` no es leído por la aplicación.
-P03 no modifica esa clase ni las credenciales del usuario.
-
-### Compilación y despliegue
-
-Desde la raíz:
+Frontend, con Node 18:
 
 ```bash
-java -version
-mvn -version
-mvn -B -f pr06_p02/pom.xml clean
-mvn -B -f pr06_p02/pom.xml compile
-mvn -B -f pr06_p02/pom.xml package
+cd frontend-angular
+npm ci
+npm run build
 ```
 
-El artefacto sigue siendo `pr06_p02/target/pr06_p02.war`.
-El compilador mantiene `source=11` y `target=11`. Para usar explícitamente el
-JDK 11 instalado sin cambiar la configuración global:
+La ejecución local del backend requiere `DB_URL`, `DB_USER`, `DB_PASSWORD`, `API_BASIC_USER` y `API_BASIC_PASSWORD`. Use una base nueva y aislada para pruebas de escritura; no reinicialice `pr06_p02`.
+
+## Pruebas y evidencias
+
+El commit local `master` `30eaa7c0` documenta, el 28 de octubre de 2026, 42 pruebas backend aprobadas, 29 pruebas Angular aprobadas, builds Maven/Angular correctos y un recorrido E2E Angular → API → PostgreSQL aislado que verificó salud, consultas, `201`, `401`, `409` y cambio de estado.
+
+La evidencia usó `pr06_p05_test_20261026`, distinta de `pr06_p02`. Tras integrar P05, las capturas, respuestas saneadas y consultas SQL estarán en `docs/P05/evidencias/`. No debe presentarse esa evidencia como una ejecución nueva de la rama actual.
+
+## Referencias técnicas
+
+- `docs/P05/openapi.yaml` y `docs/P05/openapi.json`: contrato REST.
+- `docs/P05/P05_DECISIONES_TECNICAS.md`: decisiones técnicas.
+- `api-spring/README.md` y `frontend-angular/README.md`: guías por módulo.
+- `docs/P05/evidencias/README.md`: índice de pruebas extremo a extremo.
+- `docs/P04/`: evidencia histórica.
+
+## Preparación para GitHub
+
+`.gitignore` excluye dependencias, cachés, productos de compilación, secretos, temporales y logs; `.env.example` permanece como plantilla sin credenciales reales.
+
+El commit `d66cc84a` versiona aproximadamente 22 790 archivos generados de `frontend-angular/node_modules/` y `frontend-angular/dist/` (≈241 MiB de blobs sin comprimir). Su blob mayor es `esbuild.wasm` (≈11 MiB). No hay blobs de 50 MiB o más en las referencias locales, pero esos archivos deben salir del índice y no volver a añadirse.
+
+Después de integrar los fuentes P05 de `master`, la limpieza segura es:
 
 ```bash
-JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 mvn -B -f pr06_p02/pom.xml clean package
+git rm -r --cached frontend-angular/node_modules frontend-angular/dist
+git add .gitignore .env.example README.md api-spring frontend-angular docs/P05 compose.yaml
+git status
+git commit -m "chore(p05): preparar fuentes y excluir artefactos generados"
+git push origin pr06-p05
 ```
 
-Con Tomcat 9 detenido, copiar el WAR y arrancar:
-
-```bash
-export TOMCAT_HOME=/opt/tomcat9
-cp pr06_p02/target/pr06_p02.war "$TOMCAT_HOME/webapps/"
-JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 \
-JRE_HOME=/usr/lib/jvm/java-11-openjdk-amd64 \
-"$TOMCAT_HOME/bin/catalina.sh" run
-```
-
-Ajustar `TOMCAT_HOME` si la instalación está en otra ruta. También se puede
-desplegar el WAR con **Run on Server** en Tomcat 9 desde VS Code.
-
-### URLs
-
-- Inicio P03: `http://localhost:8080/pr06_p02/`
-- Inicio XHTML explícito: `http://localhost:8080/pr06_p02/index.xhtml`
-- Sesiones: `http://localhost:8080/pr06_p02/sesiones.xhtml`
-- Formulario: `http://localhost:8080/pr06_p02/registro.xhtml`
-- Registros: `http://localhost:8080/pr06_p02/registros.xhtml`
-- Conexión: `http://localhost:8080/pr06_p02/health`
-- P02 permanece en `/pr06_p02/index.jsp`, `/pr06_p02/sesiones`,
-  `/pr06_p02/registro` y `/pr06_p02/registros`.
-
-### Pruebas manuales y evidencia
-
-Antes de registrar, escoger una pareja sesión/participante activo que todavía
-no tenga ENTRADA. Se puede localizar con:
-
-```sql
-SELECT s.id_sesion, s.nombre, p.id_participante, p.codigo_ficticio
-FROM sesion s CROSS JOIN participante p
-WHERE p.estado = 'ACTIVO'
-  AND NOT EXISTS (
-    SELECT 1 FROM registro r
-    WHERE r.id_sesion = s.id_sesion
-      AND r.id_participante = p.id_participante
-      AND r.tipo_registro = 'ENTRADA'
-  )
-ORDER BY s.id_sesion, p.id_participante;
-```
-
-1. **P03-01 — Carga:** abrir `sesiones.xhtml`. Deben aparecer las sesiones de
-   PostgreSQL en `p:dataTable`. Comparar con `SELECT * FROM sesion;`.
-2. **P03-02 — Registro válido:** abrir `registro.xhtml`, elegir una pareja
-   disponible, mantener ENTRADA y escribir `Prueba manual P03` como observación.
-   Abrir DevTools → Network, limpiar la lista y pulsar **Registrar entrada**.
-   Debe aparecer el mensaje de éxito y la fila en la tabla. La petición debe
-   ser XHR con `javax.faces.partial.ajax=true`; su respuesta XML debe actualizar
-   `registroForm:mensajes` y `registroForm:registros`, sin nueva navegación Document.
-3. **P03-03 — Incompleto:** volver a abrir el formulario y enviarlo dejando
-   sesión o participante sin seleccionar. JSF debe mostrar el mensaje obligatorio.
-   Comparar `SELECT count(*) FROM registro;` antes y después: no debe cambiar.
-4. **P03-04 — Duplicado:** seleccionar exactamente la pareja usada en P03-02 y
-   enviar de nuevo ENTRADA. Debe aparecer el rechazo de duplicado. Comprobar que
-   existe una sola fila para esa pareja y tipo.
-5. **P03-05 — Persistencia:** abrir `registros.xhtml` y recargar. La fila de
-   P03-02 debe seguir visible y coincidir con la consulta SQL:
-
-```sql
-SELECT r.id_registro, s.nombre AS sesion,
-       p.codigo_ficticio, r.tipo_registro, r.fecha_hora, r.observacion
-FROM registro r
-JOIN sesion s ON s.id_sesion = r.id_sesion
-JOIN participante p ON p.id_participante = r.id_participante
-ORDER BY r.id_registro DESC;
-
--- Debe devolver cero filas:
-SELECT id_sesion, id_participante, tipo_registro, count(*)
-FROM registro
-GROUP BY id_sesion, id_participante, tipo_registro
-HAVING count(*) > 1;
-```
-
-Validaciones adicionales del mismo flujo: manipular una sesión/participante
-inexistente, enviar tipo SALIDA o una observación de más de 200 caracteres.
-El servidor debe rechazarlos sin insertar. El límite también existe en la interfaz.
-
-### Capturas para el reporte
-
-- **Figura 3.1 — Inicio P03:** URL `index.xhtml` y navegación principal.
-- **Figura 3.2 — Sesiones:** tabla PrimeFaces con las sesiones de PostgreSQL.
-- **Figura 3.3 — Formulario:** selectores, tipo ENTRADA, observación y botón.
-- **Figura 3.4 — Campo obligatorio:** mensaje JSF y conteo SQL sin cambios.
-- **Figura 3.5 — Registro válido:** mensaje de éxito y fila añadida a la tabla.
-- **Figura 3.6 — AJAX:** DevTools con la petición XHR y actualizaciones parciales.
-- **Figura 3.7 — Duplicado:** mensaje de rechazo y ausencia de una segunda fila.
-- **Figura 3.8 — Persistencia:** registros tras recargar y consulta PostgreSQL
-  mostrando el mismo ID, participante, sesión y observación.
-- **Figura 3.9 — Maven:** `BUILD SUCCESS`, ruta del WAR y versiones Java/Maven.
-
-### Resultados de verificación P03 (2026-09-22)
-
-Verificación con navegador automatizado, peticiones JSF parciales y consultas
-SQL directas. Se utilizó una instancia temporal de Tomcat 9.0.121 en
-`http://localhost:18080/pr06_p02/`, con `CATALINA_BASE=/tmp/pr06-p03-tomcat` y
-JDK 11.0.33-ea. Esa instancia se detuvo al terminar; no se reemplazó el despliegue
-habitual del usuario. Las URLs de uso de arriba asumen Tomcat en el puerto 8080.
-
-| Comprobación | Estado | Evidencia observada |
-| --- | --- | --- |
-| Maven clean, compile y package | VERIFICADO | BUILD SUCCESS; Maven 3.9.12 ejecutándose con JDK 21.0.13-ea, source/target 11. |
-| WAR | VERIFICADO | `pr06_p02/target/pr06_p02.war`, aproximadamente 10 MiB; clases de aplicación con major version 55 (Java 11). |
-| Ejecución en Java 11 | VERIFICADO | WAR desplegado y flujo ejecutado en Tomcat 9.0.121 con JDK 11.0.33-ea. |
-| P03-01: carga | VERIFICADO | Dos sesiones provenientes de PostgreSQL en la tabla PrimeFaces. |
-| P03-02: válido y AJAX | VERIFICADO | Mensaje de éxito, fila visible y persistida; HTTP 200 con respuesta `partial-response` actualizando mensajes y tabla; mismo documento del navegador. |
-| P03-03: incompleto | VERIFICADO | Mensajes de sesión y participante obligatorios; conteo PostgreSQL sin cambios. |
-| P03-04: duplicado | VERIFICADO | Rechazo de la misma pareja y ENTRADA; sin nueva fila en PostgreSQL. |
-| P03-05: persistencia | VERIFICADO | Nueva vista `registros.xhtml` recupera los mismos ID y observaciones confirmados por SQL. |
-| Sesión/participante inexistentes, tipo SALIDA y observación de 201 caracteres | VERIFICADO | Peticiones manipuladas rechazadas con mensajes en español; sin inserciones. |
-| Rutas P02 y /health | VERIFICADO | HTTP 200 en inicio JSP, sesiones, formulario, registros y comprobación de conexión. |
-| Suite automática Maven | NO_VERIFICADO | El repositorio no tiene pruebas automatizadas Maven; Surefire informa `No tests to run`. No equivale a verificar el flujo. |
-| Capturas definitivas del reporte | PENDIENTE | Tomar las figuras 3.1–3.9 con el procedimiento anterior. |
-
-Quedaron dos registros ficticios de la verificación: ID 1 (sesión 1,
-participante 1, `Verificacion P03 AJAX 2026-09-22`) e ID 3 (sesión 1,
-participante 2, `Verificacion final P03`). Para repetir la prueba válida, elegir
-otra pareja disponible. La fila temporal ID 2, creada al detectar el truncado,
-fue retirada de forma específica durante la prueba; no se reinició la secuencia.
-
-Problemas encontrados y resueltos:
-
-- Falta de `javax.xml.bind.DatatypeConverter` en Java 11: se añadió JAXB API,
-  requerida para guardar el estado de vista de MyFaces.
-- Mensaje predeterminado en inglés al manipular un selector: validadores JSF
-  explícitos mantienen el rechazo y ofrecen mensajes en español.
-- `p:inputTextarea` recorta al máximo antes de validar: se comprueba además la
-  longitud del parámetro original para rechazar envíos de más de 200 caracteres.
-- Advertencia de deprecación de managed beans: se conserva deliberadamente la
-  API disponible en JSF 2.3 para este incremento sin añadir CDI.
-
-No se modificaron los DAO, scripts SQL, JSP, servlets ni el cambio local de
-`ConexionDB.java`. No se incorporaron funcionalidades fuera del alcance P03.
-
-### Navegación y adaptación responsive (2026-09-23)
-
-Las cuatro vistas P03 comparten `p:tabMenu`, con iconos y pestaña activa según
-la vista. En móviles las pestañas se distribuyen en varias filas. Las tablas
-usan el modo `reflow` del Showcase de PrimeFaces: apilan los campos para
-conservar toda la información en pantallas pequeñas. La paginación permite
-seleccionar 5, 10 o 20 filas.
-
-`resources/css/p03.css` contiene los ajustes compartidos de tamaño y separación.
-No se añadieron dependencias, frameworks CSS ni librerías UI.
-
-Los botones **Actualizar sesiones** y **Actualizar registros** consultan los DAO
-existentes con `process="@this"` y actualizan solamente mensajes y tabla.
-**Registrar entrada** procesa sus campos y actualiza mensajes y registros.
-Estas acciones usan `partialSubmit="true"`; la paginación utiliza el AJAX propio
-de PrimeFaces. El TabMenu navega entre los XHTML mediante GET: cambiar de vista
-sí carga otro documento; las operaciones dentro de las vistas son parciales.
-
-Verificación: **VERIFICADO** en Tomcat 9 con Java 11, a 375 y 1280 píxeles,
-sin desbordamiento horizontal en las cuatro vistas. Las actualizaciones de
-consulta, el envío incompleto y el rechazo de duplicado devolvieron respuestas
-JSF parciales sin cambiar el documento. Maven package: **BUILD SUCCESS**.
+Esto evita nuevos artefactos, pero no reduce objetos ya presentes en el historial. Si GitHub exige eliminar esos objetos históricos, se requiere autorización específica para reescribir `pr06-p05` con `git filter-repo` o crear una rama limpia; no lo haga automáticamente.
