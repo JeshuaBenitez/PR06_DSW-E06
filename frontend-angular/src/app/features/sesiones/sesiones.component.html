@@ -1,0 +1,56 @@
+<main class="pagina">
+  <header class="encabezado-pagina">
+    <div>
+      <p class="sobretitulo">Gestión académica</p>
+      <h1>Sesiones</h1>
+      <p>Consulta horarios y aplica únicamente las transiciones permitidas.</p>
+    </div>
+    <button type="button" class="boton-secundario" (click)="cargar()" [disabled]="cargando()">
+      Actualizar
+    </button>
+  </header>
+
+  <p *ngIf="cargando()" class="mensaje-info" aria-live="polite">Consultando sesiones…</p>
+  <p *ngIf="mensajeError()" class="mensaje-error alerta" role="alert">{{ mensajeError() }}</p>
+  <p *ngIf="mensajeExito()" class="mensaje-exito alerta" role="status">{{ mensajeExito() }}</p>
+  <p *ngIf="!cargando() && !mensajeError() && sesiones().length === 0" class="estado-vacio">
+    No existen sesiones registradas.
+  </p>
+
+  <div *ngIf="!cargando() && sesiones().length > 0" class="tabla-contenedor">
+    <table>
+      <caption class="visualmente-oculto">Sesiones disponibles</caption>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Sesión</th>
+          <th>Fecha y horario</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let sesion of sesiones()">
+          <td>{{ sesion.idSesion }}</td>
+          <td>
+            <strong>{{ sesion.nombre }}</strong>
+            <small>{{ sesion.descripcion || 'Sin descripción' }}</small>
+          </td>
+          <td>{{ sesion.fecha }}<small>{{ sesion.horaInicio }}–{{ sesion.horaFin }}</small></td>
+          <td><span class="insignia" [ngClass]="'estado-' + sesion.estado.toLowerCase()">{{ sesion.estado }}</span></td>
+          <td class="acciones">
+            <button
+              *ngFor="let transicion of transiciones(sesion)"
+              type="button"
+              (click)="cambiarEstado(sesion, transicion)"
+              [disabled]="idActualizando() !== null"
+            >
+              {{ idActualizando() === sesion.idSesion ? 'Guardando…' : transicion.etiqueta }}
+            </button>
+            <span *ngIf="transiciones(sesion).length === 0">Sin cambios disponibles</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</main>

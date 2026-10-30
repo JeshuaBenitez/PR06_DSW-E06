@@ -1,0 +1,48 @@
+<section class="credenciales" aria-labelledby="titulo-credenciales">
+  <div>
+    <h2 id="titulo-credenciales">Credenciales para operaciones protegidas</h2>
+    <p class="ayuda">Se conservan únicamente en memoria y se borran al recargar.</p>
+  </div>
+
+  <form (ngSubmit)="guardar()" class="credenciales-formulario">
+    <div class="campo-compacto">
+      <label for="usuario-basic">Usuario</label>
+      <input
+        id="usuario-basic"
+        name="usuario"
+        type="text"
+        autocomplete="username"
+        [(ngModel)]="usuario"
+      >
+    </div>
+    <div class="campo-compacto">
+      <label for="password-basic">Contraseña</label>
+      <input
+        id="password-basic"
+        name="password"
+        type="password"
+        autocomplete="current-password"
+        [(ngModel)]="password"
+      >
+    </div>
+    <button type="submit">Guardar en memoria</button>
+    <button
+      *ngIf="autenticacion.tieneCredenciales()"
+      type="button"
+      class="boton-secundario"
+      (click)="borrar()"
+    >
+      Borrar
+    </button>
+  </form>
+
+  <p *ngIf="mensajeFormulario" class="mensaje-error" role="alert">
+    {{ mensajeFormulario }}
+  </p>
+  <p class="estado-credenciales" aria-live="polite">
+    <span *ngIf="autenticacion.estadoCredenciales() === 'ausentes'">Sin credenciales en memoria.</span>
+    <span *ngIf="autenticacion.estadoCredenciales() === 'pendiente'">Credenciales guardadas; pendientes de validación por una operación protegida.</span>
+    <span *ngIf="autenticacion.estadoCredenciales() === 'aceptada'" class="mensaje-exito">El backend aceptó las credenciales en la última operación protegida.</span>
+    <span *ngIf="autenticacion.estadoCredenciales() === 'rechazada'" class="mensaje-error">El backend rechazó las credenciales en la última operación protegida.</span>
+  </p>
+</section>

@@ -1,0 +1,864 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "PR06 — API REST P05",
+    "version": "1.0.0",
+    "description": "Contrato REST para integrar Angular 16.2.12, Spring Boot 2.7.18, Java 11 y PostgreSQL. Conserva las consultas y el registro exclusivo de ENTRADA de P02/P03, e incorpora salud y cambio controlado del estado de una sesión. Las respuestas de error no exponen SQL, trazas ni información sensible."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080/api",
+      "description": "API local de P05; /api es el prefijo común."
+    }
+  ],
+  "tags": [
+    {
+      "name": "Salud",
+      "description": "Disponibilidad de la API y de PostgreSQL."
+    },
+    {
+      "name": "Sesiones",
+      "description": "Consulta y cambio controlado del estado de las sesiones."
+    },
+    {
+      "name": "Participantes",
+      "description": "Consulta de participantes activos."
+    },
+    {
+      "name": "Registros",
+      "description": "Consulta y registro manual de entradas."
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "Salud"
+        ],
+        "operationId": "verificarSalud",
+        "summary": "Consultar la salud de la API",
+        "description": "Operación pública. Devuelve 200 cuando la API puede acceder a PostgreSQL y 503 cuando la base de datos no está disponible.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "API y PostgreSQL disponibles.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Salud"
+                },
+                "example": {
+                  "estado": "OK",
+                  "baseDatos": "DISPONIBLE"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno inesperado al comprobar la salud.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "codigo": "ERROR_INTERNO",
+                  "mensaje": "No fue posible comprobar la salud del servicio."
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "PostgreSQL no está disponible.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "codigo": "SERVICIO_NO_DISPONIBLE",
+                  "mensaje": "La base de datos no está disponible."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sesiones": {
+      "get": {
+        "tags": [
+          "Sesiones"
+        ],
+        "operationId": "listarSesiones",
+        "summary": "Consultar sesiones",
+        "description": "Operación pública. Devuelve las sesiones ordenadas por fecha y hora de inicio; devuelve un arreglo vacío cuando no existen resultados.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Consulta realizada correctamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Sesion"
+                  }
+                },
+                "examples": {
+                  "conResultados": {
+                    "summary": "Sesiones disponibles",
+                    "value": [
+                      {
+                        "idSesion": 1,
+                        "nombre": "Sesion de bienvenida",
+                        "fecha": "2026-09-15",
+                        "horaInicio": "09:00:00",
+                        "horaFin": "11:00:00",
+                        "estado": "PROGRAMADA",
+                        "descripcion": "Sesion de prueba para registro de asistencia"
+                      }
+                    ]
+                  },
+                  "sinResultados": {
+                    "summary": "No existen sesiones",
+                    "value": []
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno al consultar las sesiones.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "codigo": "ERROR_INTERNO",
+                  "mensaje": "No fue posible consultar las sesiones."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sesiones/{idSesion}/estado": {
+      "patch": {
+        "tags": [
+          "Sesiones"
+        ],
+        "operationId": "cambiarEstadoSesion",
+        "summary": "Cambiar el estado de una sesión",
+        "description": "Operación protegida con HTTP Basic. Permite únicamente estas\ntransiciones:\n\n- PROGRAMADA a EN_CURSO.\n- PROGRAMADA a CANCELADA.\n- EN_CURSO a FINALIZADA.\n\nNo permite retrocesos, cambios al mismo estado ni otras transiciones.\nEl estado de la sesión no condiciona el registro de ENTRADA.",
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "idSesion",
+            "in": "path",
+            "required": true,
+            "description": "Identificador positivo de la sesión.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Nuevo estado solicitado para la sesión.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CambioEstadoSesion"
+              },
+              "examples": {
+                "iniciar": {
+                  "summary": "Iniciar una sesión programada",
+                  "value": {
+                    "estado": "EN_CURSO"
+                  }
+                },
+                "finalizar": {
+                  "summary": "Finalizar una sesión en curso",
+                  "value": {
+                    "estado": "FINALIZADA"
+                  }
+                },
+                "cancelar": {
+                  "summary": "Cancelar una sesión programada",
+                  "value": {
+                    "estado": "CANCELADA"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estado actualizado correctamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Sesion"
+                },
+                "example": {
+                  "idSesion": 1,
+                  "nombre": "Sesion de bienvenida",
+                  "fecha": "2026-09-15",
+                  "horaInicio": "09:00:00",
+                  "horaFin": "11:00:00",
+                  "estado": "EN_CURSO",
+                  "descripcion": "Sesion de prueba para registro de asistencia"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID, JSON o estado inválido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "codigo": "DATOS_INVALIDOS",
+                  "mensaje": "El estado solicitado no es válido."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Autenticación ausente o inválida.",
+            "headers": {
+              "WWW-Authenticate": {
+                "description": "Desafío de autenticación HTTP Basic.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Basic realm=\"PR06\""
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "codigo": "NO_AUTORIZADO",
+                  "mensaje": "Se requiere autenticación válida."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "La sesión indicada no existe.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "codigo": "REFERENCIA_NO_ENCONTRADA",
+                  "mensaje": "La sesión indicada no existe."
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Cambio al mismo estado, retroceso u otra transición no permitida.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "mismoEstado": {
+                    "summary": "El estado no cambia",
+                    "value": {
+                      "codigo": "TRANSICION_NO_PERMITIDA",
+                      "mensaje": "La sesión ya se encuentra en el estado solicitado."
+                    }
+                  },
+                  "retroceso": {
+                    "summary": "La transición supone un retroceso",
+                    "value": {
+                      "codigo": "TRANSICION_NO_PERMITIDA",
+                      "mensaje": "La transición de estado solicitada no está permitida."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno al cambiar el estado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "codigo": "ERROR_INTERNO",
+                  "mensaje": "No fue posible cambiar el estado de la sesión."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/participantes": {
+      "get": {
+        "tags": [
+          "Participantes"
+        ],
+        "operationId": "listarParticipantesActivos",
+        "summary": "Consultar participantes activos",
+        "description": "Operación pública. Devuelve sólo participantes con estado ACTIVO, ordenados por nombre y apellido; devuelve un arreglo vacío cuando no existen resultados.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Consulta realizada correctamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Participante"
+                  }
+                },
+                "examples": {
+                  "conResultados": {
+                    "summary": "Participantes activos",
+                    "value": [
+                      {
+                        "idParticipante": 1,
+                        "codigoFicticio": "P001",
+                        "nombre": "Ana",
+                        "apellido": "Lopez",
+                        "estado": "ACTIVO"
+                      }
+                    ]
+                  },
+                  "sinResultados": {
+                    "summary": "No existen participantes activos",
+                    "value": []
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno al consultar los participantes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "codigo": "ERROR_INTERNO",
+                  "mensaje": "No fue posible consultar los participantes activos."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/registros": {
+      "get": {
+        "tags": [
+          "Registros"
+        ],
+        "operationId": "listarRegistros",
+        "summary": "Consultar registros de asistencia",
+        "description": "Operación pública. Devuelve los registros ordenados por fechaHora descendente; devuelve un arreglo vacío cuando no existen resultados.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Consulta realizada correctamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Registro"
+                  }
+                },
+                "examples": {
+                  "conResultados": {
+                    "summary": "Registros disponibles",
+                    "value": [
+                      {
+                        "idRegistro": 1,
+                        "idSesion": 1,
+                        "idParticipante": 1,
+                        "nombreSesion": "Sesion de bienvenida",
+                        "nombreParticipante": "Ana Lopez",
+                        "tipoRegistro": "ENTRADA",
+                        "fechaHora": "2026-09-15T09:05:30.123456",
+                        "observacion": "Registro manual"
+                      }
+                    ]
+                  },
+                  "sinResultados": {
+                    "summary": "No existen registros",
+                    "value": []
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno al consultar los registros.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "codigo": "ERROR_INTERNO",
+                  "mensaje": "No fue posible consultar los registros."
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Registros"
+        ],
+        "operationId": "registrarEntrada",
+        "summary": "Registrar una entrada",
+        "description": "Operación protegida con HTTP Basic. Valida IDs positivos, existencia de sesión y participante, participante ACTIVO, tipo ENTRADA y observación de hasta 200 caracteres. La longitud se valida antes de recortar espacios; después, una observación vacía se convierte a null. El estado de la sesión no condiciona el registro. Los duplicados se protegen también mediante la restricción UNIQUE de PostgreSQL.",
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistroEntrada"
+              },
+              "example": {
+                "idSesion": 1,
+                "idParticipante": 4,
+                "tipoRegistro": "ENTRADA",
+                "observacion": "Evidencia P05"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Entrada persistida con ID y fechaHora asignados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Registro"
+                },
+                "example": {
+                  "idRegistro": 1,
+                  "idSesion": 1,
+                  "idParticipante": 4,
+                  "nombreSesion": "Sesion de bienvenida",
+                  "nombreParticipante": "Miguel Torres",
+                  "tipoRegistro": "ENTRADA",
+                  "fechaHora": "2026-09-15T09:05:30.123456",
+                  "observacion": "Evidencia P05"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "JSON o campos inválidos, o participante inactivo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "idInvalido": {
+                    "summary": "Identificador no positivo",
+                    "value": {
+                      "codigo": "DATOS_INVALIDOS",
+                      "mensaje": "Los identificadores deben ser enteros positivos."
+                    }
+                  },
+                  "observacionLarga": {
+                    "summary": "Observación mayor de 200 caracteres",
+                    "value": {
+                      "codigo": "DATOS_INVALIDOS",
+                      "mensaje": "La observación no puede exceder 200 caracteres."
+                    }
+                  },
+                  "participanteInactivo": {
+                    "summary": "Participante existente pero inactivo",
+                    "value": {
+                      "codigo": "DATOS_INVALIDOS",
+                      "mensaje": "El participante debe estar activo."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Autenticación ausente o inválida.",
+            "headers": {
+              "WWW-Authenticate": {
+                "description": "Desafío de autenticación HTTP Basic.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Basic realm=\"PR06\""
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "codigo": "NO_AUTORIZADO",
+                  "mensaje": "Se requiere autenticación válida."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "La sesión o el participante indicado no existe.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "sesionInexistente": {
+                    "summary": "Sesión no encontrada",
+                    "value": {
+                      "codigo": "REFERENCIA_NO_ENCONTRADA",
+                      "mensaje": "La sesión indicada no existe."
+                    }
+                  },
+                  "participanteInexistente": {
+                    "summary": "Participante no encontrado",
+                    "value": {
+                      "codigo": "REFERENCIA_NO_ENCONTRADA",
+                      "mensaje": "El participante indicado no existe."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Ya existe la misma ENTRADA para la sesión y el participante.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "codigo": "REGISTRO_DUPLICADO",
+                  "mensaje": "El participante ya tiene una entrada registrada en esta sesión."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno durante el registro.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "codigo": "ERROR_INTERNO",
+                  "mensaje": "No fue posible registrar la entrada."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "basicAuth": {
+        "type": "http",
+        "scheme": "basic",
+        "description": "HTTP Basic local. El usuario y la contraseña se configuran externamente; el contrato no contiene credenciales concretas."
+      }
+    },
+    "schemas": {
+      "Salud": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "estado",
+          "baseDatos"
+        ],
+        "properties": {
+          "estado": {
+            "type": "string",
+            "enum": [
+              "OK"
+            ]
+          },
+          "baseDatos": {
+            "type": "string",
+            "enum": [
+              "DISPONIBLE"
+            ]
+          }
+        }
+      },
+      "Sesion": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "idSesion",
+          "nombre",
+          "fecha",
+          "horaInicio",
+          "horaFin",
+          "estado",
+          "descripcion"
+        ],
+        "properties": {
+          "idSesion": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          "nombre": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date"
+          },
+          "horaInicio": {
+            "type": "string",
+            "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d$",
+            "example": "09:00:00"
+          },
+          "horaFin": {
+            "type": "string",
+            "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d$",
+            "example": "11:00:00"
+          },
+          "estado": {
+            "type": "string",
+            "description": "Estado garantizado por la aplicación P05. PostgreSQL conserva la columna VARCHAR(20) existente sin una restricción CHECK.",
+            "enum": [
+              "PROGRAMADA",
+              "EN_CURSO",
+              "FINALIZADA",
+              "CANCELADA"
+            ]
+          },
+          "descripcion": {
+            "type": "string",
+            "maxLength": 200,
+            "nullable": true
+          }
+        }
+      },
+      "CambioEstadoSesion": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "estado"
+        ],
+        "properties": {
+          "estado": {
+            "type": "string",
+            "enum": [
+              "PROGRAMADA",
+              "EN_CURSO",
+              "FINALIZADA",
+              "CANCELADA"
+            ]
+          }
+        }
+      },
+      "Participante": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "idParticipante",
+          "codigoFicticio",
+          "nombre",
+          "apellido",
+          "estado"
+        ],
+        "properties": {
+          "idParticipante": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          "codigoFicticio": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 30
+          },
+          "nombre": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "apellido": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "ACTIVO"
+            ]
+          }
+        }
+      },
+      "Registro": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "idRegistro",
+          "idSesion",
+          "idParticipante",
+          "nombreSesion",
+          "nombreParticipante",
+          "tipoRegistro",
+          "fechaHora",
+          "observacion"
+        ],
+        "properties": {
+          "idRegistro": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          "idSesion": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          "idParticipante": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          "nombreSesion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "nombreParticipante": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 161
+          },
+          "tipoRegistro": {
+            "type": "string",
+            "enum": [
+              "ENTRADA"
+            ]
+          },
+          "fechaHora": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?$",
+            "example": "2026-09-15T09:05:30.123456",
+            "description": "Fecha y hora local sin zona, correspondiente a TIMESTAMP de PostgreSQL."
+          },
+          "observacion": {
+            "type": "string",
+            "maxLength": 200,
+            "nullable": true
+          }
+        }
+      },
+      "RegistroEntrada": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "idSesion",
+          "idParticipante",
+          "tipoRegistro"
+        ],
+        "properties": {
+          "idSesion": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          "idParticipante": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          "tipoRegistro": {
+            "type": "string",
+            "enum": [
+              "ENTRADA"
+            ]
+          },
+          "observacion": {
+            "type": "string",
+            "maxLength": 200,
+            "nullable": true,
+            "description": "Se valida antes de recortar espacios; el texto vacío se convierte a null después de la validación."
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "codigo",
+          "mensaje"
+        ],
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "enum": [
+              "DATOS_INVALIDOS",
+              "NO_AUTORIZADO",
+              "REFERENCIA_NO_ENCONTRADA",
+              "REGISTRO_DUPLICADO",
+              "TRANSICION_NO_PERMITIDA",
+              "SERVICIO_NO_DISPONIBLE",
+              "ERROR_INTERNO"
+            ]
+          },
+          "mensaje": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300,
+            "description": "Mensaje comprensible sin SQL, trazas ni información sensible."
+          }
+        }
+      }
+    }
+  }
+}

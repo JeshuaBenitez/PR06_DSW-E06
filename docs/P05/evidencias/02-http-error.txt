@@ -1,0 +1,2 @@
+E2E navegador: ERROR
+No se observo POST /api/registros HTTP 401: registro sin autenticacion

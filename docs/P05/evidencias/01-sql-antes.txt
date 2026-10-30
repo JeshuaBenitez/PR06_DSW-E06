@@ -1,0 +1,33 @@
+PR06_P05 — Estado SQL anterior a Fase 5A
+Fecha: 2026-10-28
+Consulta ejecutada en transacción READ ONLY.
+
+SELECT current_database();
+SELECT count(*) ...;
+SELECT id_sesion, estado FROM sesion ORDER BY id_sesion;
+SELECT id_registro, id_sesion, id_participante, tipo_registro, observacion FROM registro ORDER BY id_registro;
+
+BEGIN
+    base_confirmada     
+------------------------
+ pr06_p05_test_20261026
+(1 row)
+
+ sesiones | participantes | registros 
+----------+---------------+-----------
+        2 |             4 |         2
+(1 row)
+
+ id_sesion |  estado  
+-----------+----------
+         1 | EN_CURSO
+         2 | EN_CURSO
+(2 rows)
+
+ id_registro | id_sesion | id_participante | tipo_registro |         observacion          
+-------------+-----------+-----------------+---------------+------------------------------
+           1 |         1 |               4 | ENTRADA       | Integracion P05
+           2 |         1 |               1 | ENTRADA       | Evidencia E2E P05 2026-10-28
+(2 rows)
+
+COMMIT

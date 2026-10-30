@@ -1,0 +1,30 @@
+.pagina-formulario {
+  max-width: 52rem;
+}
+
+.formulario {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.campo {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.campo label {
+  color: #26344a;
+  font-weight: 700;
+}
+
+.campo small {
+  color: #5d6879;
+}
+
+.campo .mensaje-error {
+  color: #9b1c1c;
+}
+
+.formulario button {
+  justify-self: start;
+}

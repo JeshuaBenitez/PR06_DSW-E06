@@ -1,0 +1,16 @@
+PR06_P05 — Respuestas del primer recorrido de escritura
+Fecha: 2026-10-28
+Origen: eventos CDP y log de Spring Boot inspeccionado antes del reinicio controlado.
+Encabezados de autenticación: omitidos.
+
+2026-10-28 17:21:35.603  POST /api/registros
+2026-10-28 17:21:35.727  HTTP 201 CREATED
+
+2026-10-28 17:21:35.927  POST /api/registros (misma sesión y participante)
+2026-10-28 17:21:35.937  HTTP 409 CONFLICT
+
+Comprobaciones cruzadas:
+- La fila creada es el registro 3, sesión 2, participante 2.
+- SQL final confirma exactamente una fila para esa combinación.
+- La captura 06 muestra el rechazo de la repetición.
+

@@ -1,0 +1,196 @@
+{
+  "navegador": "Google Chrome for Testing 156.0.8078.73 (headless)",
+  "origenAngular": "http://127.0.0.1:4200",
+  "modoReanudacion": true,
+  "encabezadosAutorizacionIncluidos": false,
+  "respuestas": [
+    {
+      "metodo": "GET",
+      "ruta": "/api/health",
+      "estado": 200,
+      "cuerpo": {
+        "estado": "OK",
+        "baseDatos": "DISPONIBLE"
+      }
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/sesiones",
+      "estado": 200,
+      "cuerpo": [
+        {
+          "idSesion": 1,
+          "nombre": "Sesion de bienvenida",
+          "fecha": "2026-09-15",
+          "horaInicio": "09:00:00",
+          "horaFin": "11:00:00",
+          "estado": "EN_CURSO",
+          "descripcion": "Sesion de prueba para registro de asistencia"
+        },
+        {
+          "idSesion": 2,
+          "nombre": "Taller de desarrollo web",
+          "fecha": "2026-09-16",
+          "horaInicio": "10:00:00",
+          "horaFin": "12:00:00",
+          "estado": "EN_CURSO",
+          "descripcion": "Taller con participantes ficticios"
+        }
+      ]
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/sesiones",
+      "estado": 200,
+      "cuerpo": [
+        {
+          "idSesion": 1,
+          "nombre": "Sesion de bienvenida",
+          "fecha": "2026-09-15",
+          "horaInicio": "09:00:00",
+          "horaFin": "11:00:00",
+          "estado": "EN_CURSO",
+          "descripcion": "Sesion de prueba para registro de asistencia"
+        },
+        {
+          "idSesion": 2,
+          "nombre": "Taller de desarrollo web",
+          "fecha": "2026-09-16",
+          "horaInicio": "10:00:00",
+          "horaFin": "12:00:00",
+          "estado": "EN_CURSO",
+          "descripcion": "Taller con participantes ficticios"
+        }
+      ]
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/participantes",
+      "estado": 200,
+      "cuerpo": [
+        {
+          "idParticipante": 1,
+          "codigoFicticio": "P001",
+          "nombre": "Ana",
+          "apellido": "Lopez",
+          "estado": "ACTIVO"
+        },
+        {
+          "idParticipante": 2,
+          "codigoFicticio": "P002",
+          "nombre": "Carlos",
+          "apellido": "Martinez",
+          "estado": "ACTIVO"
+        },
+        {
+          "idParticipante": 3,
+          "codigoFicticio": "P003",
+          "nombre": "Laura",
+          "apellido": "Hernandez",
+          "estado": "ACTIVO"
+        },
+        {
+          "idParticipante": 4,
+          "codigoFicticio": "P004",
+          "nombre": "Miguel",
+          "apellido": "Torres",
+          "estado": "ACTIVO"
+        }
+      ]
+    },
+    {
+      "metodo": "POST",
+      "ruta": "/api/registros",
+      "estado": 401,
+      "cuerpo": {
+        "codigo": "NO_AUTORIZADO",
+        "mensaje": "Se requiere autenticación válida."
+      }
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/registros",
+      "estado": 200,
+      "cuerpo": [
+        {
+          "idRegistro": 3,
+          "idSesion": 2,
+          "idParticipante": 2,
+          "nombreSesion": "Taller de desarrollo web",
+          "nombreParticipante": "Carlos Martinez",
+          "tipoRegistro": "ENTRADA",
+          "fechaHora": "2026-10-28T17:21:35.706116",
+          "observacion": "E2E Fase 5A 2026-10-28"
+        },
+        {
+          "idRegistro": 2,
+          "idSesion": 1,
+          "idParticipante": 1,
+          "nombreSesion": "Sesion de bienvenida",
+          "nombreParticipante": "Ana Lopez",
+          "tipoRegistro": "ENTRADA",
+          "fechaHora": "2026-10-28T09:40:05.607017",
+          "observacion": "Evidencia E2E P05 2026-10-28"
+        },
+        {
+          "idRegistro": 1,
+          "idSesion": 1,
+          "idParticipante": 4,
+          "nombreSesion": "Sesion de bienvenida",
+          "nombreParticipante": "Miguel Torres",
+          "tipoRegistro": "ENTRADA",
+          "fechaHora": "2026-10-26T13:30:35.093269",
+          "observacion": "Integracion P05"
+        }
+      ]
+    },
+    {
+      "metodo": "GET",
+      "ruta": "/api/sesiones",
+      "estado": 200,
+      "cuerpo": [
+        {
+          "idSesion": 1,
+          "nombre": "Sesion de bienvenida",
+          "fecha": "2026-09-15",
+          "horaInicio": "09:00:00",
+          "horaFin": "11:00:00",
+          "estado": "EN_CURSO",
+          "descripcion": "Sesion de prueba para registro de asistencia"
+        },
+        {
+          "idSesion": 2,
+          "nombre": "Taller de desarrollo web",
+          "fecha": "2026-09-16",
+          "horaInicio": "10:00:00",
+          "horaFin": "12:00:00",
+          "estado": "EN_CURSO",
+          "descripcion": "Taller con participantes ficticios"
+        }
+      ]
+    },
+    {
+      "metodo": "PATCH",
+      "ruta": "/api/sesiones/1/estado",
+      "estado": 200,
+      "cuerpo": {
+        "idSesion": 1,
+        "nombre": "Sesion de bienvenida",
+        "fecha": "2026-09-15",
+        "horaInicio": "09:00:00",
+        "horaFin": "11:00:00",
+        "estado": "FINALIZADA",
+        "descripcion": "Sesion de prueba para registro de asistencia"
+      }
+    },
+    {
+      "metodo": "PATCH",
+      "ruta": "/api/sesiones/1/estado",
+      "estado": 409,
+      "cuerpo": {
+        "codigo": "TRANSICION_NO_PERMITIDA",
+        "mensaje": "La transición de estado solicitada no está permitida."
+      }
+    }
+  ]
+}

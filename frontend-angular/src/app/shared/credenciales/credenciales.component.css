@@ -1,0 +1,48 @@
+:host {
+  display: block;
+  border-bottom: 1px solid #d7dfeb;
+  background: #eef3fa;
+}
+
+.credenciales {
+  width: min(74rem, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 1rem 0;
+}
+
+.credenciales h2,
+.credenciales p {
+  margin: 0;
+}
+
+.credenciales h2 {
+  font-size: 1rem;
+}
+
+.ayuda,
+.estado-credenciales {
+  color: #536174;
+  font-size: 0.875rem;
+}
+
+.credenciales-formulario {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+}
+
+.campo-compacto {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.campo-compacto label {
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.campo-compacto input {
+  width: min(16rem, 70vw);
+}

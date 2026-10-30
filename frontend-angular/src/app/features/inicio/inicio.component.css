@@ -1,0 +1,75 @@
+:host {
+  display: block;
+}
+
+.inicio {
+  max-width: 46rem;
+}
+
+.presentacion,
+.estado {
+  padding: 2rem;
+  border: 1px solid #d8dee9;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  box-shadow: 0 0.75rem 2rem rgb(31 41 55 / 8%);
+}
+
+.estado {
+  margin-top: 1.5rem;
+}
+
+.etiqueta {
+  margin: 0 0 0.5rem;
+  color: #2855a6;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+h1,
+h2 {
+  color: #172033;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2rem, 6vw, 3rem);
+}
+
+h2 {
+  margin-top: 0;
+}
+
+.correcto {
+  color: #167348;
+  font-weight: 700;
+}
+
+.cargando {
+  color: #4b5563;
+}
+
+.error {
+  color: #9b1c1c;
+}
+
+dl div {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+dt {
+  font-weight: 600;
+}
+
+dd {
+  margin: 0;
+}
+
+.alcance {
+  margin-top: 1.5rem;
+  color: #596273;
+  text-align: center;
+}

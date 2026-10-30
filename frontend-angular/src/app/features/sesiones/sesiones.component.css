@@ -1,0 +1,30 @@
+td small {
+  display: block;
+  margin-top: 0.3rem;
+  color: #5b6677;
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.acciones span {
+  color: #697386;
+  font-size: 0.875rem;
+}
+
+.insignia {
+  display: inline-block;
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.estado-programada { color: #1d4f91; background: #e1edff; }
+.estado-en_curso { color: #14633f; background: #dff5e9; }
+.estado-finalizada { color: #4c5566; background: #e8ebef; }
+.estado-cancelada { color: #8d2525; background: #fbe5e5; }

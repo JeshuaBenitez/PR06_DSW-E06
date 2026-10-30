@@ -1,0 +1,17 @@
+PR06_P05 — Verificaciones de Fase 5A
+Fecha: 2026-10-28
+
+Runtimes temporales, sin modificar versiones globales:
+- Java: Temurin 11.0.32.1
+- Node.js: 18.20.8
+- npm: 10.8.2
+- Angular/CLI: 16.2.12
+- TypeScript: 5.1.6
+- Chrome for Testing: 156.0.8078.73
+
+Resultados:
+- mvn test: 42 pruebas, 0 fallos, 0 errores, 0 omitidas.
+- mvn -DskipTests package: BUILD SUCCESS; JAR Spring Boot generado.
+- npm test -- --watch=false --browsers=ChromeHeadless: 29 SUCCESS.
+- npm run build: build de producción satisfactorio; hash d757c317ec6bd743.
+

@@ -1,0 +1,58 @@
+<main class="pagina pagina-formulario">
+  <header class="encabezado-pagina">
+    <div>
+      <p class="sobretitulo">Registro manual</p>
+      <h1>Registrar asistencia</h1>
+      <p>Registra exclusivamente una ENTRADA para un participante activo.</p>
+    </div>
+    <button type="button" class="boton-secundario" (click)="cargarCatalogos()" [disabled]="cargandoCatalogos()">Actualizar listas</button>
+  </header>
+
+  <p *ngIf="cargandoCatalogos()" class="mensaje-info" aria-live="polite">Cargando sesiones y participantes…</p>
+  <p *ngIf="mensajeError()" class="mensaje-error alerta" role="alert">{{ mensajeError() }}</p>
+  <p *ngIf="registroCreado() as registro" class="mensaje-exito alerta" role="status">
+    Entrada #{{ registro.idRegistro }} registrada correctamente para {{ registro.nombreParticipante }}.
+  </p>
+
+  <form *ngIf="!cargandoCatalogos()" [formGroup]="formulario" (ngSubmit)="registrar()" class="tarjeta formulario">
+    <div class="campo">
+      <label for="sesion">Sesión <span aria-hidden="true">*</span></label>
+      <select id="sesion" formControlName="idSesion">
+        <option [ngValue]="null">Seleccione una sesión</option>
+        <option *ngFor="let sesion of sesiones()" [ngValue]="sesion.idSesion">
+          #{{ sesion.idSesion }} · {{ sesion.nombre }} · {{ sesion.fecha }}
+        </option>
+      </select>
+      <small *ngIf="formulario.controls.idSesion.touched && formulario.controls.idSesion.invalid" class="mensaje-error">Seleccione una sesión.</small>
+      <small *ngIf="sesiones().length === 0">No hay sesiones disponibles.</small>
+    </div>
+
+    <div class="campo">
+      <label for="participante">Participante activo <span aria-hidden="true">*</span></label>
+      <select id="participante" formControlName="idParticipante">
+        <option [ngValue]="null">Seleccione un participante</option>
+        <option *ngFor="let participante of participantes()" [ngValue]="participante.idParticipante">
+          {{ participante.codigoFicticio }} · {{ participante.nombre }} {{ participante.apellido }}
+        </option>
+      </select>
+      <small *ngIf="formulario.controls.idParticipante.touched && formulario.controls.idParticipante.invalid" class="mensaje-error">Seleccione un participante.</small>
+      <small *ngIf="participantes().length === 0">No hay participantes activos disponibles.</small>
+    </div>
+
+    <div class="campo">
+      <label for="tipo">Tipo</label>
+      <input id="tipo" type="text" value="ENTRADA" readonly>
+    </div>
+
+    <div class="campo">
+      <label for="observacion">Observación opcional</label>
+      <textarea id="observacion" formControlName="observacion" rows="4" maxlength="200" aria-describedby="contador-observacion"></textarea>
+      <small id="contador-observacion">{{ formulario.controls.observacion.value?.length || 0 }}/200 caracteres</small>
+      <small *ngIf="formulario.controls.observacion.hasError('maxlength')" class="mensaje-error">La observación no puede exceder 200 caracteres.</small>
+    </div>
+
+    <button type="submit" [disabled]="enviando() || sesiones().length === 0 || participantes().length === 0">
+      {{ enviando() ? 'Registrando…' : 'Registrar entrada' }}
+    </button>
+  </form>
+</main>

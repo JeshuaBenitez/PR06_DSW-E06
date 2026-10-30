@@ -1,0 +1,31 @@
+<main class="pagina">
+  <header class="encabezado-pagina">
+    <div>
+      <p class="sobretitulo">Evidencia persistida</p>
+      <h1>Registros de asistencia</h1>
+      <p>Consulta las entradas almacenadas en PostgreSQL.</p>
+    </div>
+    <button type="button" class="boton-secundario" (click)="cargar()" [disabled]="cargando()">Actualizar</button>
+  </header>
+
+  <p *ngIf="cargando()" class="mensaje-info" aria-live="polite">Consultando registros…</p>
+  <p *ngIf="mensajeError()" class="mensaje-error alerta" role="alert">{{ mensajeError() }}</p>
+  <p *ngIf="!cargando() && !mensajeError() && registros().length === 0" class="estado-vacio">No existen registros de asistencia.</p>
+
+  <div *ngIf="!cargando() && registros().length > 0" class="tabla-contenedor">
+    <table>
+      <caption class="visualmente-oculto">Registros de asistencia persistidos</caption>
+      <thead><tr><th>ID</th><th>Sesión</th><th>Participante</th><th>Tipo</th><th>Fecha y hora</th><th>Observación</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let registro of registros()">
+          <td>{{ registro.idRegistro }}</td>
+          <td>{{ registro.nombreSesion }}<small>#{{ registro.idSesion }}</small></td>
+          <td>{{ registro.nombreParticipante }}<small>#{{ registro.idParticipante }}</small></td>
+          <td>{{ registro.tipoRegistro }}</td>
+          <td>{{ registro.fechaHora }}</td>
+          <td>{{ registro.observacion || '—' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</main>

@@ -1,0 +1,63 @@
+.cabecera {
+  color: #ffffff;
+  background: #173565;
+}
+
+.cabecera-contenido {
+  display: flex;
+  width: min(74rem, calc(100% - 2rem));
+  margin: 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1rem 0;
+}
+
+.marca {
+  display: grid;
+  color: inherit;
+  text-decoration: none;
+}
+
+.marca span {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.marca small {
+  color: #dce8fa;
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+nav a {
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.4rem;
+  color: #e9f1fc;
+  text-decoration: none;
+}
+
+nav a:hover,
+nav a.activo {
+  color: #173565;
+  background: #ffffff;
+}
+
+footer {
+  padding: 2rem 1rem;
+  color: #596579;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+@media (max-width: 46rem) {
+  .cabecera-contenido {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

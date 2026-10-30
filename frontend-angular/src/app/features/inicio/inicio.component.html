@@ -1,0 +1,38 @@
+<main class="inicio pagina">
+  <section class="presentacion">
+    <p class="etiqueta">PR06 · P05</p>
+    <h1>Control de asistencia con eventos</h1>
+    <p>
+      Integración inicial entre Angular, Spring Boot y PostgreSQL.
+    </p>
+  </section>
+
+  <section class="estado" aria-live="polite">
+    <h2>Disponibilidad del sistema</h2>
+
+    <p *ngIf="estadoConsulta() === 'cargando'" class="cargando">
+      Consultando el backend…
+    </p>
+
+    <div *ngIf="estadoConsulta() === 'exito' && salud() as resultado">
+      <p class="correcto">Backend disponible</p>
+      <dl>
+        <div>
+          <dt>API</dt>
+          <dd>{{ resultado.estado }}</dd>
+        </div>
+        <div>
+          <dt>PostgreSQL</dt>
+          <dd>{{ resultado.baseDatos }}</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div *ngIf="estadoConsulta() === 'error'" class="error" role="alert">
+      <p>{{ mensajeError() }}</p>
+      <button type="button" (click)="consultarSalud()">Reintentar</button>
+    </div>
+  </section>
+
+  <p class="alcance">Use la navegación principal para consultar y registrar asistencia.</p>
+</main>

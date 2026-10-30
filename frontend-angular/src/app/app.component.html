@@ -1,0 +1,22 @@
+<header class="cabecera">
+  <div class="cabecera-contenido">
+    <a routerLink="/" class="marca" aria-label="Ir al inicio de PR06">
+      <span>PR06</span>
+      <small>Control de asistencia</small>
+    </a>
+    <nav aria-label="Navegación principal">
+      <a routerLink="/" routerLinkActive="activo" [routerLinkActiveOptions]="{ exact: true }">Inicio</a>
+      <a routerLink="/sesiones" routerLinkActive="activo">Sesiones</a>
+      <a routerLink="/registrar" routerLinkActive="activo">Registrar asistencia</a>
+      <a routerLink="/registros" routerLinkActive="activo">Registros</a>
+    </nav>
+  </div>
+</header>
+
+<app-credenciales></app-credenciales>
+
+<router-outlet></router-outlet>
+
+<footer>
+  PR06 · P05 · HTTP Basic sin TLS se limita al laboratorio local.
+</footer>

@@ -1,0 +1,79 @@
+name: pr06-p05
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${PR06_DOCKER_DB_NAME:-pr06_p05_docker}
+      POSTGRES_USER: ${PR06_DOCKER_DB_USER:-pr06_app}
+      POSTGRES_PASSWORD: ${PR06_DOCKER_DB_PASSWORD:?Configure PR06_DOCKER_DB_PASSWORD}
+    ports:
+      - target: 5432
+        published: "${PR06_DB_PORT:-5433}"
+        protocol: tcp
+        host_ip: 127.0.0.1
+    volumes:
+      - pr06_p05_postgres_data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro,Z
+      - ./data.sql:/docker-entrypoint-initdb.d/02-data.sql:ro,Z
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    networks:
+      - pr06_internal
+
+  backend:
+    build:
+      context: ./api-spring
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8080
+      DB_URL: jdbc:postgresql://db:5432/${PR06_DOCKER_DB_NAME:-pr06_p05_docker}
+      DB_USER: ${PR06_DOCKER_DB_USER:-pr06_app}
+      DB_PASSWORD: ${PR06_DOCKER_DB_PASSWORD:?Configure PR06_DOCKER_DB_PASSWORD}
+      API_BASIC_USER: ${PR06_DOCKER_BASIC_USER:?Configure PR06_DOCKER_BASIC_USER}
+      API_BASIC_PASSWORD: ${PR06_DOCKER_BASIC_PASSWORD:?Configure PR06_DOCKER_BASIC_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      SPRING_SQL_INIT_MODE: never
+    ports:
+      - target: 8080
+        published: "${PR06_BACKEND_PORT:-8080}"
+        protocol: tcp
+        host_ip: 127.0.0.1
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - pr06_internal
+      
+
+  frontend:
+    build:
+      context: ./frontend-angular
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - target: 80
+        published: "${PR06_FRONTEND_PORT:-4200}"
+        protocol: tcp
+        host_ip: 127.0.0.1
+    depends_on:
+      backend:
+        condition: service_started
+    networks:
+      - pr06_internal
+
+volumes:
+  pr06_p05_postgres_data:
+
+networks:
+  pr06_internal:
+    driver: bridge
+    internal: false
