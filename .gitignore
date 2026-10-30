@@ -1,2 +1,12 @@
-target/
+# Angular
+frontend-angular/.angular/
+frontend-angular/node_modules/
+frontend-angular/dist/
+
+# Spring Boot / Maven
+api-spring/target/
+
+# Secrets
 .env
+.env.*
+!.env.example
