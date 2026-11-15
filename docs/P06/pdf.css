@@ -1,0 +1,20 @@
+@page { size: A4; margin: 18mm 17mm; }
+html { font-family: Arial, Helvetica, sans-serif; color: #202a38; }
+body { font-size: 10pt; line-height: 1.42; }
+h1 { font-size: 19pt; color: #173b51; margin: 0 0 10pt; }
+h2 { font-size: 13pt; color: #173b51; margin: 17pt 0 7pt; break-after: avoid; }
+h3 { font-size: 11pt; color: #173b51; break-after: avoid; }
+h2#declaración-de-uso-de-inteligencia-artificial { break-before: page; }
+p { margin: 0 0 8pt; }
+table { width: 100%; border-collapse: collapse; margin: 8pt 0 12pt; font-size: 9pt; }
+th, td { border: 1px solid #b8c5ce; padding: 5pt 6pt; vertical-align: top; }
+th { background: #e9f0f4; }
+thead { display: table-header-group; }
+tr, img, pre, figure { break-inside: avoid; }
+img { display: block; max-width: 100%; height: auto; margin: 10pt auto 4pt; }
+figure { margin: 10pt 0 4pt; break-after: avoid; }
+figure + p { break-before: avoid; }
+figcaption[aria-hidden="true"] { display: none; }
+pre { white-space: pre-wrap; background: #f1f4f6; padding: 8pt; font-size: 8.5pt; }
+code { font-family: 'Liberation Mono', Consolas, monospace; font-size: .91em; }
+a { color: #15576b; overflow-wrap: anywhere; }
