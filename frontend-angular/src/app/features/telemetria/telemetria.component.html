@@ -1,0 +1,24 @@
+<main class="pagina-telemetria">
+  <h1>Aforo IoT simulado</h1>
+  <p>Lecturas de personas en una sesión ficticia, enviadas por el simulador cada cinco segundos.</p>
+  <label for="sesion-iot">ID de sesión</label>
+  <input id="sesion-iot" type="number" min="1" [(ngModel)]="sesionId" />
+  <button type="button" (click)="iniciar()">Consultar</button>
+  <p *ngIf="error()" role="alert" class="aviso">{{ error() }}</p>
+  <section aria-live="polite" class="resumen">
+    <h2>Estado actual</h2>
+    <p *ngIf="desconectado()" class="aviso">Sin lecturas recientes: dispositivo desconectado o simulador detenido.</p>
+    <p *ngIf="!desconectado() && ultima() as lectura">{{ lectura.valor }} {{ lectura.unidad }} · {{ lectura.alerta === 'AFORO_ALTO' ? 'Alerta: aforo alto (25 o más)' : 'Aforo normal' }}</p>
+    <p *ngIf="ultima() as lectura">Última lectura: {{ lectura.fechaHora | date:'medium' }}</p>
+  </section>
+  <section>
+    <h2>Historial de las últimas 24 horas</h2>
+    <p *ngIf="lecturas().length === 0">Todavía no hay lecturas para esta sesión.</p>
+    <div class="tabla" *ngIf="lecturas().length > 0">
+      <table><caption>Tabla 1. Lecturas de aforo ficticio, ordenadas de la más reciente a la más antigua. Fuente: base PostgreSQL del proyecto.</caption>
+        <thead><tr><th>Fecha y hora</th><th>Dispositivo</th><th>Valor</th><th>Estado</th></tr></thead>
+        <tbody><tr *ngFor="let lectura of lecturas()"><td>{{ lectura.fechaHora | date:'medium' }}</td><td>{{ lectura.idDispositivo }}</td><td>{{ lectura.valor }} {{ lectura.unidad }}</td><td>{{ lectura.alerta === 'AFORO_ALTO' ? 'Aforo alto' : 'Normal' }}</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</main>

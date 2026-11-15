@@ -2,7 +2,7 @@
 
 Proyecto académico de Desarrollo de Sistemas Web para consultar sesiones y participantes, registrar asistencia manual de tipo `ENTRADA`, evitar duplicados y consultar los registros persistidos. P05 reutiliza las reglas funcionales de P02/P03, sin sustituir el legado.
 
-> **Estado de publicación de `pr06-p05`:** el árbol actual de esta rama contiene artefactos generados de Angular, pero no contiene los fuentes, Dockerfiles ni documentación P05. Esos archivos existen en el commit local de `master` `30eaa7c0`. **No publique aún esta rama como una entrega P05 funcional.** Integre primero ese contenido y retire del índice los artefactos generados indicados en [Preparación para GitHub](#preparación-para-github). Las secciones P05 describen la implementación que debe acompañar la rama tras dicha integración.
+**P06:** el simulador de aforo, la API de telemetría, el historial y el dashboard se describen en [el reporte P06](docs/P06/P06_EQUIPO_DSW-E06.md). El informe completo está en [DOCX](docs/P06/P06_EQUIPO_DSW-E06.docx).
 
 ## Evolución del proyecto
 
@@ -11,6 +11,7 @@ Proyecto académico de Desarrollo de Sistemas Web para consultar sesiones y part
 | P02 | JSP, Servlets, JDBC y PostgreSQL | Implementación Web 1.0 original. Permanece en `pr06_p02/`. |
 | P03 | JSF 2.3, PrimeFaces y PostgreSQL | Evolución de interfaz y evidencia histórica. |
 | P05 | Angular 16, Spring Boot y PostgreSQL | API REST, SPA, HTTP Basic local, pruebas y Docker Compose. |
+| P06 | Simulador HTTP, Angular, Spring Boot y PostgreSQL | Lecturas periódicas de aforo ficticio, historial temporal y alertas. |
 
 `pr06_p02/` conserva P02/P03; `docs/P04/` conserva los contratos y diagramas históricos.
 
@@ -47,7 +48,7 @@ La evidencia local histórica se ejecutó en PostgreSQL 18.6; debe repetirse en 
 
 No se implementan `SALIDA`, edición o eliminación de registros, JWT, OAuth ni usuarios persistentes.
 
-## Estructura esperada tras integrar P05
+## Estructura del incremento P05
 
 ```text
 PR06/
@@ -65,7 +66,7 @@ PR06/
 
 Para Docker se necesita Docker Engine con Docker Compose y los puertos `4200`, `8080` y `5433` disponibles (o valores alternativos). Para ejecución individual: JDK 11, Maven, Node.js 18 y PostgreSQL accesible.
 
-Tras integrar P05, cree la configuración local:
+Para ejecutar P05/P06, cree la configuración local:
 
 ```bash
 cp .env.example .env
@@ -114,7 +115,7 @@ Flujo: consultar sesiones y participantes activos, introducir credenciales local
 
 ## API REST
 
-El prefijo es `/api`. El contrato fuente, al integrar P05, es `docs/P05/openapi.yaml`.
+El prefijo es `/api`. El contrato P05 es `docs/P05/openapi.yaml`; las rutas nuevas P06 se describen en el reporte P06.
 
 | Método | Ruta | Acceso | Respuestas principales |
 | --- | --- | --- | --- |
@@ -152,9 +153,9 @@ La ejecución local del backend requiere `DB_URL`, `DB_USER`, `DB_PASSWORD`, `AP
 
 ## Pruebas y evidencias
 
-El commit local `master` `30eaa7c0` documenta, el 28 de octubre de 2026, 42 pruebas backend aprobadas, 29 pruebas Angular aprobadas, builds Maven/Angular correctos y un recorrido E2E Angular → API → PostgreSQL aislado que verificó salud, consultas, `201`, `401`, `409` y cambio de estado.
+La evidencia P05 del 28 de octubre de 2026 documenta 42 pruebas backend aprobadas, 29 pruebas Angular aprobadas, builds Maven/Angular correctos y un recorrido E2E Angular → API → PostgreSQL aislado.
 
-La evidencia usó `pr06_p05_test_20261026`, distinta de `pr06_p02`. Tras integrar P05, las capturas, respuestas saneadas y consultas SQL estarán en `docs/P05/evidencias/`. No debe presentarse esa evidencia como una ejecución nueva de la rama actual.
+La evidencia histórica usó `pr06_p05_test_20261026`, distinta de `pr06_p02`. Sus capturas, respuestas saneadas y consultas SQL están en `docs/P05/evidencias/`. P06 tiene verificación propia en `docs/P06/evidencia/`.
 
 ## Referencias técnicas
 
@@ -164,20 +165,8 @@ La evidencia usó `pr06_p05_test_20261026`, distinta de `pr06_p02`. Tras integra
 - `docs/P05/evidencias/README.md`: índice de pruebas extremo a extremo.
 - `docs/P04/`: evidencia histórica.
 
-## Preparación para GitHub
+## Higiene del repositorio
 
 `.gitignore` excluye dependencias, cachés, productos de compilación, secretos, temporales y logs; `.env.example` permanece como plantilla sin credenciales reales.
 
-El commit `d66cc84a` versiona aproximadamente 22 790 archivos generados de `frontend-angular/node_modules/` y `frontend-angular/dist/` (≈241 MiB de blobs sin comprimir). Su blob mayor es `esbuild.wasm` (≈11 MiB). No hay blobs de 50 MiB o más en las referencias locales, pero esos archivos deben salir del índice y no volver a añadirse.
-
-Después de integrar los fuentes P05 de `master`, la limpieza segura es:
-
-```bash
-git rm -r --cached frontend-angular/node_modules frontend-angular/dist
-git add .gitignore .env.example README.md api-spring frontend-angular docs/P05 compose.yaml
-git status
-git commit -m "chore(p05): preparar fuentes y excluir artefactos generados"
-git push origin pr06-p05
-```
-
-Esto evita nuevos artefactos, pero no reduce objetos ya presentes en el historial. Si GitHub exige eliminar esos objetos históricos, se requiere autorización específica para reescribir `pr06-p05` con `git filter-repo` o crear una rama limpia; no lo haga automáticamente.
+El historial P05 contiene artefactos generados de Angular en un commit anterior. `.gitignore` impide incorporarlos de nuevo; la historia anterior se conserva como evidencia de trazabilidad. El incremento P06 incluye sólo fuentes, pruebas, documentación y evidencia saneada.

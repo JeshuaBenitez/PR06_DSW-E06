@@ -25,7 +25,7 @@ public class SecurityConfig {
             throws Exception {
         http
             .csrf()
-                .ignoringAntMatchers("/registros", "/sesiones/*/estado")
+                .ignoringAntMatchers("/registros", "/sesiones/*/estado", "/telemetria")
                 .and()
             .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -38,6 +38,8 @@ public class SecurityConfig {
                     "/participantes",
                     "/registros"
                 ).permitAll()
+                .antMatchers(HttpMethod.GET, "/telemetria").permitAll()
+                .antMatchers(HttpMethod.POST, "/telemetria").authenticated()
                 .antMatchers(HttpMethod.POST, "/registros").authenticated()
                 .antMatchers(
                     HttpMethod.PATCH,

@@ -49,6 +49,18 @@ export interface Salud {
   baseDatos: 'DISPONIBLE';
 }
 
+export interface LecturaIoT {
+  idLectura: number;
+  idDispositivo: number;
+  idSesion: number;
+  fechaHora: string;
+  variable: 'AFORO';
+  unidad: 'personas';
+  valor: number;
+  origen: 'SIMULADOR_HTTP';
+  alerta: 'NORMAL' | 'AFORO_ALTO';
+}
+
 export type CodigoErrorApi =
   | 'DATOS_INVALIDOS'
   | 'NO_AUTORIZADO'

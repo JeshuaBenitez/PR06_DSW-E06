@@ -21,13 +21,13 @@ describe('AppComponent', () => {
     expect(compiled.querySelector('router-outlet')).not.toBeNull();
   });
 
-  it('muestra las cuatro opciones de navegación', () => {
+  it('muestra las cinco opciones de navegación', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const enlaces = Array.from(
       (fixture.nativeElement as HTMLElement).querySelectorAll('nav a')
     ).map((enlace) => enlace.getAttribute('href'));
 
-    expect(enlaces).toEqual(['/', '/sesiones', '/registrar', '/registros']);
+    expect(enlaces).toEqual(['/', '/sesiones', '/registrar', '/registros', '/telemetria']);
   });
 });

@@ -17,6 +17,7 @@ services:
       - pr06_p05_postgres_data:/var/lib/postgresql/data
       - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro,Z
       - ./data.sql:/docker-entrypoint-initdb.d/02-data.sql:ro,Z
+      - ./docs/P06/01-telemetria.sql:/docker-entrypoint-initdb.d/03-telemetria.sql:ro,Z
     healthcheck:
       test:
         - CMD-SHELL

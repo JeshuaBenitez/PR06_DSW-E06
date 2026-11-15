@@ -9,7 +9,8 @@ import {
   Registro,
   RegistroEntrada,
   Salud,
-  Sesion
+  Sesion,
+  LecturaIoT
 } from '../models/api.models';
 import { AutenticacionService } from './autenticacion.service';
 
@@ -32,6 +33,10 @@ export class ApiService {
 
   listarRegistros(): Observable<Registro[]> {
     return this.http.get<Registro[]>(`${API_BASE_URL}/registros`);
+  }
+
+  listarTelemetria(sesionId: number): Observable<LecturaIoT[]> {
+    return this.http.get<LecturaIoT[]>(`${API_BASE_URL}/telemetria`, { params: { sesionId } });
   }
 
   registrarEntrada(solicitud: RegistroEntrada): Observable<Registro> {

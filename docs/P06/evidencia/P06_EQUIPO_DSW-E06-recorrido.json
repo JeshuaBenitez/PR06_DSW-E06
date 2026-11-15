@@ -1,0 +1,35 @@
+{
+  "sinAutenticacion": 401,
+  "valorFueraDeRango": 400,
+  "lecturaValida": [
+    201,
+    {
+      "idLectura": 1,
+      "idDispositivo": 1,
+      "idSesion": 1,
+      "fechaHora": "2026-11-15T04:26:10.569623Z",
+      "variable": "AFORO",
+      "unidad": "personas",
+      "origen": "SIMULADOR_HTTP",
+      "alerta": "AFORO_ALTO",
+      "valor": 26
+    }
+  ],
+  "historial": [
+    200,
+    [
+      {
+        "idLectura": 1,
+        "idDispositivo": 1,
+        "idSesion": 1,
+        "fechaHora": "2026-11-15T04:26:10.569623Z",
+        "variable": "AFORO",
+        "unidad": "personas",
+        "origen": "SIMULADOR_HTTP",
+        "alerta": "AFORO_ALTO",
+        "valor": 26.0
+      }
+    ]
+  ],
+  "filasPostgreSQL": 1
+}
