@@ -1,6 +1,6 @@
 # P06 · Web 4.0 e IoT simulado: control de asistencia PR06
 
-**Equipo DSW-E06 · DSW-19559 · Universidad Veracruzana · 14 de noviembre de 2026**
+**Equipo DSW-E06 · DSW-19559 · Universidad Veracruzana · 15 de noviembre de 2026**
 
 **Repositorio:** https://github.com/JeshuaBenitez/PR06_DSW-E06
 
@@ -39,7 +39,7 @@ El umbral de **25 personas** es una regla didáctica configurable mediante códi
 
 ## Preparación reproducible
 
-Requisitos: Java 11, Maven, Angular 16 con Node compatible, PostgreSQL y Python 3. El flujo principal se verificó localmente con PostgreSQL 17.6; el perfil docente Docker declara PostgreSQL 16 y queda **PENDIENTE** certificar esa versión en esta ejecución.
+Requisitos: Java 11, Maven, Angular 16 con Node compatible, PostgreSQL y Python 3. El flujo principal se verificó con PostgreSQL 16.15 en un contenedor temporal aislado. Una ejecución anterior utilizó PostgreSQL 17.6; la evidencia actual corresponde a la versión 16 del perfil docente.
 
 1. En una base **nueva**, cargar `schema.sql`, `data.sql` y después `docs/P06/01-telemetria.sql`. En una base P05 existente, aplicar únicamente la migración P06 una vez, después de identificar la base y respaldarla. No repetir los scripts iniciales sobre datos existentes.
 2. Configurar las variables `DB_URL`, `DB_USER`, `DB_PASSWORD`, `API_BASIC_USER` y `API_BASIC_PASSWORD` según `.env.example`; no confirmar `.env` en Git.
@@ -54,13 +54,13 @@ python3 iot-simulator/simular.py --sesion 1 --valor 26 --una-vez
 
 El simulador solo admite una URL local mediante `PR06_API_URL` (predeterminada `http://127.0.0.1:8080/api/telemetria`). Para Docker Compose, completar `.env` con valores locales y ejecutar `docker compose up -d --build`. La migración se carga al **crear un volumen nuevo**; un volumen P05 previo requiere aplicar el SQL por separado. `docker compose down` detiene sin borrar el volumen.
 
-Para repetir el recorrido aislado completo, con PostgreSQL 17 disponible, ejecutar desde la raíz:
+Para repetir el recorrido aislado completo con PostgreSQL 16 y Docker, ejecutar desde la raíz:
 
 ```bash
-python3 scripts/verify-p06.py
+P06_DB_ENGINE=docker16 python3 scripts/verify-p06.py
 ```
 
-El script crea un clúster temporal en `/tmp`, carga el esquema y los datos ficticios, levanta API y Angular, comprueba respuestas y SQL, toma la captura y detiene los procesos propios. No modifica una base preexistente. `PG_BIN` permite elegir otra carpeta de binarios PostgreSQL. Se requieren los puertos locales 55439, 8080 y 4200 libres.
+El script crea un contenedor PostgreSQL temporal, carga el esquema y los datos ficticios, levanta API y Angular, comprueba respuestas y SQL, ejecuta el simulador durante varios ciclos, captura la alerta y la desconexión, y detiene los procesos y el contenedor que creó. No modifica una base preexistente. También admite el modo local `python3 scripts/verify-p06.py`; `PG_BIN` permite elegir la carpeta de binarios PostgreSQL de ese modo. Se requieren los puertos locales 55439, 8080 y 4200 libres.
 
 ## API y tratamiento de errores
 
@@ -75,19 +75,23 @@ La clave no se registra ni se copia a la evidencia. El navegador solo consulta t
 
 ## Evidencia y resultados
 
-**Tabla 3. Índice de evidencia frente a R06. Fuente: ejecución local del 14 de noviembre de 2026.**
+**Tabla 3. Índice de evidencia frente a R06. Fuente: ejecución local del 14 y 15 de noviembre de 2026.**
 
 | Criterio R06 | Evidencia | Estado |
 |---|---|---|
 | Integración IoT, 3 pts | Salida real de `iot-simulator/simular.py` y POST `201` en `evidencia/P06_EQUIPO_DSW-E06-recorrido.json` | VERIFICADO |
 | Dashboard, 3 pts | `evidencia/P06_EQUIPO_DSW-E06-dashboard.png`, compilación Angular | VERIFICADO |
-| Historial PostgreSQL, 2 pts | `filasPostgreSQL: 2` y GET con ambas lecturas en JSON | VERIFICADO |
-| Eventos o lectura periódica, 2 pts | Ciclo de 5 segundos en simulador y componente Angular | VERIFICADO en código; PENDIENTE prueba prolongada |
-| Análisis y alertas, 2 pts | Valor 26 devuelve `AFORO_ALTO` y aparece en la captura; umbral y desconexión documentados | VERIFICADO para umbral; PENDIENTE observación de desconexión |
+| Historial PostgreSQL, 2 pts | PostgreSQL 16.15, cinco filas en SQL y GET con las mismas lecturas en JSON | VERIFICADO |
+| Eventos o lectura periódica, 2 pts | Tres emisiones observadas del simulador, separadas por cinco segundos; polling Angular | VERIFICADO |
+| Análisis y alertas, 2 pts | `AFORO_ALTO` para valor 26 y aviso de desconexión tras detener el simulador, ambos capturados | VERIFICADO |
 
 ![Dashboard P06 con alerta e historial](evidencia/P06_EQUIPO_DSW-E06-dashboard.png)
 
 **Figura 2. Dashboard de aforo IoT simulado con lectura de 26 personas, alerta e historial consultado desde PostgreSQL. Fuente: captura automatizada del navegador Chrome en la verificación aislada.**
+
+![Dashboard P06 con aviso de desconexión](evidencia/P06_EQUIPO_DSW-E06-desconectado.png)
+
+**Figura 3. Aviso visible al pasar más de 30 segundos sin nuevas lecturas tras detener el simulador. Fuente: captura automatizada del navegador Chrome en la verificación aislada.**
 
 **Tabla 4. Pruebas de esta ejecución. Fuente: consola y archivo de evidencia.**
 
@@ -96,12 +100,11 @@ La clave no se registra ni se copia a la evidencia. El navegador solo consulta t
 | Maven `test` | 44 pruebas, 0 fallos | VERIFICADO |
 | Angular `npm test -- --watch=false --browsers=ChromeHeadless` | 29 pruebas, 0 fallos | VERIFICADO |
 | Angular `npm run build` | Compilación terminada | VERIFICADO |
-| API + PostgreSQL + navegador | `401`, `400`, `201`, GET `200`, 2 filas SQL y captura | VERIFICADO |
-| Simulador CLI, una lectura | Ejecutado con `--una-vez --valor 26`; salida en JSON | VERIFICADO |
-| Simulador CLI en proceso continuo | No ejecutado en esta verificación | PENDIENTE |
-| Docker Compose con PostgreSQL 16 | No ejecutado en esta verificación | PENDIENTE |
+| API + PostgreSQL 16.15 + navegador | `401`, `400`, `201`, GET `200`, cinco filas SQL y dos capturas | VERIFICADO |
+| Simulador CLI, lectura individual y continua | Una lectura con `--una-vez`; tres emisiones periódicas observadas en 12 segundos | VERIFICADO |
+| Desconexión | Aviso capturado después de detener el simulador y superar los 30 segundos | VERIFICADO |
 
-La prueba aislada genera una lectura HTTP de control y ejecuta el simulador CLI para generar otra. La captura muestra valores consultados por Angular, no datos añadidos manualmente en la página. La base de verificación se elimina al concluir el script. Las pruebas unitarias se ejecutaron con Java 21 instalado en el host, usando compilación objetivo Java 11; el recorrido de la API utilizó el ejecutable Java 11.
+La prueba aislada genera una lectura HTTP de control y ejecuta el simulador CLI para generar otras cuatro. Las capturas muestran valores consultados por Angular, no datos añadidos manualmente en la página. La base de verificación se elimina al concluir el script. Las pruebas unitarias se ejecutaron con Java 21 instalado en el host, usando compilación objetivo Java 11; el recorrido de la API utilizó el ejecutable Java 11. Docker Compose completo no forma parte de este recorrido: se utilizó un contenedor PostgreSQL 16 aislado y procesos locales para API y Angular.
 
 ## Decisiones, límites y seguridad
 
@@ -130,6 +133,6 @@ La trazabilidad verificable es el historial Git del repositorio enlazado en la p
 
 Para preparar P06 se utilizó un asistente de inteligencia artificial como apoyo sustancial para revisar los requisitos de la actividad, integrar el simulador de aforo con la API Spring Boot y el dashboard Angular, preparar pruebas, organizar la evidencia y redactar este informe. El incremento parte del proyecto P05 del repositorio y conserva el historial de las etapas anteriores.
 
-Los resultados indicados como **VERIFICADO** proceden de comandos ejecutados durante esta preparación y de la evidencia incorporada al repositorio; los aspectos no comprobados se identifican como **PENDIENTE**. La distribución de responsabilidades de la Tabla 5 es una simulación solicitada para el reporte, no una confirmación de aportaciones personales ni prueba de que cada integrante ejecutó las verificaciones descritas. Debe ser revisada y validada por el equipo antes de presentarse como declaración de autoría.
+Los resultados indicados como **VERIFICADO** proceden de comandos ejecutados durante esta preparación y de la evidencia incorporada al repositorio. La distribución de responsabilidades de la Tabla 5 es una simulación solicitada para el reporte, no una confirmación de aportaciones personales ni prueba de que cada integrante ejecutó las verificaciones descritas. Debe ser revisada y validada por el equipo antes de presentarse como declaración de autoría.
 
 El uso del asistente no sustituye la revisión del código y del documento por los integrantes, la autoría responsable del equipo ni la verificación técnica del evaluador.

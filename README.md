@@ -34,7 +34,7 @@ Nginx entrega la SPA y reenvía `/api` al backend por la red interna Docker. Spr
 | PostgreSQL | 16 para Docker |
 | OpenAPI | 3.0.3 |
 
-La evidencia local histórica se ejecutó en PostgreSQL 18.6; debe repetirse en PostgreSQL 16 si se exige certificación exacta del perfil docente.
+La evidencia P05 histórica se ejecutó en PostgreSQL 18.6. El recorrido P06 se verificó con PostgreSQL 16.15 en un contenedor aislado; consulte el [reporte P06](docs/P06/P06_EQUIPO_DSW-E06.md).
 
 ## Funcionalidades P05
 
