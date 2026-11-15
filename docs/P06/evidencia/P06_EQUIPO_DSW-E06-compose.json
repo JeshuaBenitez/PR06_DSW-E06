@@ -1,0 +1,50 @@
+{
+  "modo": "Docker Compose completo",
+  "servicios": [
+    "frontend",
+    "backend",
+    "db"
+  ],
+  "postgresVersion": "16.15",
+  "salud": [
+    200,
+    {
+      "estado": "OK",
+      "baseDatos": "DISPONIBLE"
+    }
+  ],
+  "sinAutenticacion": 401,
+  "valorFueraDeRango": 400,
+  "lecturaValida": [
+    201,
+    {
+      "idLectura": 1,
+      "idDispositivo": 1,
+      "idSesion": 1,
+      "fechaHora": "2026-11-15T17:45:43.912384Z",
+      "variable": "AFORO",
+      "unidad": "personas",
+      "origen": "SIMULADOR_HTTP",
+      "alerta": "AFORO_ALTO",
+      "valor": 26
+    }
+  ],
+  "historial": [
+    200,
+    [
+      {
+        "idLectura": 1,
+        "idDispositivo": 1,
+        "idSesion": 1,
+        "fechaHora": "2026-11-15T17:45:43.912384Z",
+        "variable": "AFORO",
+        "unidad": "personas",
+        "origen": "SIMULADOR_HTTP",
+        "alerta": "AFORO_ALTO",
+        "valor": 26.0
+      }
+    ]
+  ],
+  "filasPostgreSQL": 1,
+  "captura": "P06_EQUIPO_DSW-E06-compose.png"
+}

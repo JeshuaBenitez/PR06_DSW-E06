@@ -4,6 +4,8 @@ Proyecto académico de Desarrollo de Sistemas Web para consultar sesiones y part
 
 **P06:** el simulador de aforo, la API de telemetría, el historial y el dashboard se describen en [el reporte P06](docs/P06/P06_EQUIPO_DSW-E06.md). El informe completo está en [DOCX](docs/P06/P06_EQUIPO_DSW-E06.docx).
 
+El recorrido P06 con los tres servicios Docker Compose se reproduce con `python3 scripts/verify-p06-compose.py`; utiliza un proyecto y credenciales temporales y guarda evidencia saneada en `docs/P06/evidencia/`.
+
 ## Evolución del proyecto
 
 | Incremento | Tecnología | Alcance |

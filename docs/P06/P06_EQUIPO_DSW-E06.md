@@ -62,6 +62,14 @@ P06_DB_ENGINE=docker16 python3 scripts/verify-p06.py
 
 El script crea un contenedor PostgreSQL temporal, carga el esquema y los datos ficticios, levanta API y Angular, comprueba respuestas y SQL, ejecuta el simulador durante varios ciclos, captura la alerta y la desconexión, y detiene los procesos y el contenedor que creó. No modifica una base preexistente. También admite el modo local `python3 scripts/verify-p06.py`; `PG_BIN` permite elegir la carpeta de binarios PostgreSQL de ese modo. Se requieren los puertos locales 55439, 8080 y 4200 libres.
 
+Para comprobar los **tres servicios integrados por Docker Compose** desde un volumen nuevo y sin usar `.env` del proyecto:
+
+```bash
+python3 scripts/verify-p06-compose.py
+```
+
+La prueba crea un proyecto Compose con nombre único, credenciales temporales y puertos locales 4306 (Angular/Nginx), 18086 (API) y 55436 (PostgreSQL). Consulta salud, envía lecturas válidas e inválidas por el proxy del frontend, compara GET con SQL, toma una captura y ejecuta `down -v` únicamente sobre ese proyecto de prueba. No toca volúmenes o contenedores existentes del equipo.
+
 ## API y tratamiento de errores
 
 **Tabla 2. Operaciones P06. Fuente: controladores y comprobación local.**
@@ -93,6 +101,10 @@ La clave no se registra ni se copia a la evidencia. El navegador solo consulta t
 
 **Figura 3. Aviso visible al pasar más de 30 segundos sin nuevas lecturas tras detener el simulador. Fuente: captura automatizada del navegador Chrome en la verificación aislada.**
 
+![Dashboard P06 ejecutado con Docker Compose](evidencia/P06_EQUIPO_DSW-E06-compose.png)
+
+**Figura 4. Dashboard servido por Nginx en Docker Compose; lectura de 26 personas obtenida por el proxy hacia Spring Boot y PostgreSQL 16.15. Fuente: captura automatizada de la verificación Compose.**
+
 **Tabla 4. Pruebas de esta ejecución. Fuente: consola y archivo de evidencia.**
 
 | Comprobación | Resultado | Estado |
@@ -103,8 +115,9 @@ La clave no se registra ni se copia a la evidencia. El navegador solo consulta t
 | API + PostgreSQL 16.15 + navegador | `401`, `400`, `201`, GET `200`, cinco filas SQL y dos capturas | VERIFICADO |
 | Simulador CLI, lectura individual y continua | Una lectura con `--una-vez`; tres emisiones periódicas observadas en 12 segundos | VERIFICADO |
 | Desconexión | Aviso capturado después de detener el simulador y superar los 30 segundos | VERIFICADO |
+| Docker Compose completo | Nginx, Spring Boot y PostgreSQL 16.15; `401`, `400`, `201`, GET `200` y una fila SQL | VERIFICADO |
 
-La prueba aislada genera una lectura HTTP de control y ejecuta el simulador CLI para generar otras cuatro. Las capturas muestran valores consultados por Angular, no datos añadidos manualmente en la página. La base de verificación se elimina al concluir el script. Las pruebas unitarias se ejecutaron con Java 21 instalado en el host, usando compilación objetivo Java 11; el recorrido de la API utilizó el ejecutable Java 11. Docker Compose completo no forma parte de este recorrido: se utilizó un contenedor PostgreSQL 16 aislado y procesos locales para API y Angular.
+La prueba aislada genera una lectura HTTP de control y ejecuta el simulador CLI para generar otras cuatro. Las capturas muestran valores consultados por Angular, no datos añadidos manualmente en la página. La base de verificación se elimina al concluir el script. Las pruebas unitarias se ejecutaron con Java 21 instalado en el host, usando compilación objetivo Java 11; el recorrido de la API utilizó el ejecutable Java 11. La comprobación Compose adicional ejecutó frontend, backend y base en contenedores propios; sus respuestas saneadas están en `evidencia/P06_EQUIPO_DSW-E06-compose.json`.
 
 ## Decisiones, límites y seguridad
 
