@@ -125,3 +125,11 @@ La trazabilidad verificable es el historial Git del repositorio enlazado en la p
 
 - Guía P06, rúbrica R06, lectura M05 y banco C11 entregados por el docente en el paquete local de la actividad.
 - Documentación del propio proyecto: `README.md`, `docs/P05/`, código y pruebas de P05/P06.
+
+## Declaración de uso de inteligencia artificial
+
+Para preparar P06 se utilizó un asistente de inteligencia artificial como apoyo sustancial para revisar los requisitos de la actividad, integrar el simulador de aforo con la API Spring Boot y el dashboard Angular, preparar pruebas, organizar la evidencia y redactar este informe. El incremento parte del proyecto P05 del repositorio y conserva el historial de las etapas anteriores.
+
+Los resultados indicados como **VERIFICADO** proceden de comandos ejecutados durante esta preparación y de la evidencia incorporada al repositorio; los aspectos no comprobados se identifican como **PENDIENTE**. La distribución de responsabilidades de la Tabla 5 es una simulación solicitada para el reporte, no una confirmación de aportaciones personales ni prueba de que cada integrante ejecutó las verificaciones descritas. Debe ser revisada y validada por el equipo antes de presentarse como declaración de autoría.
+
+El uso del asistente no sustituye la revisión del código y del documento por los integrantes, la autoría responsable del equipo ni la verificación técnica del evaluador.
