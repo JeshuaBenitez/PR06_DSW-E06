@@ -72,14 +72,18 @@ with tempfile.TemporaryDirectory(prefix='pr06-p06-') as tmp:
         no_auth = request('POST', '/telemetria', dato)
         invalido = request('POST', '/telemetria', {**dato, 'valor': 101}, True)
         valido = request('POST', '/telemetria', dato, True)
+        simulacion = subprocess.check_output(['python3', str(ROOT/'iot-simulator/simular.py'),
+            '--sesion', '1', '--dispositivo', '1', '--valor', '26', '--una-vez'],
+            env={**env, 'PR06_API_URL': 'http://127.0.0.1:8080/api/telemetria'}, text=True).strip()
         historial = request('GET', '/telemetria?sesionId=1')
         sql = subprocess.check_output(['psql', '-h', '127.0.0.1', '-p', pg_port, '-d', 'pr06_p06_verify',
             '-tAc', 'SELECT COUNT(*) FROM lectura_iot WHERE id_sesion=1'], text=True).strip()
         resultado = {'sinAutenticacion': no_auth[0], 'valorFueraDeRango': invalido[0],
-                     'lecturaValida': valido, 'historial': historial, 'filasPostgreSQL': int(sql)}
+                     'lecturaValida': valido, 'salidaSimulador': simulacion,
+                     'historial': historial, 'filasPostgreSQL': int(sql)}
         (EVIDENCE/'P06_EQUIPO_DSW-E06-recorrido.json').write_text(json.dumps(resultado, indent=2, ensure_ascii=False))
         assert no_auth[0] == 401 and invalido[0] == 400 and valido[0] == 201
-        assert valido[1]['alerta'] == 'AFORO_ALTO' and historial[0] == 200 and int(sql) == 1
+        assert valido[1]['alerta'] == 'AFORO_ALTO' and historial[0] == 200 and int(sql) == 2
 
         frontend_log = open(tmp/'frontend.log', 'w')
         children.append(subprocess.Popen(['npm', 'start', '--', '--host', '127.0.0.1', '--port', '4200'],
@@ -90,7 +94,7 @@ with tempfile.TemporaryDirectory(prefix='pr06-p06-') as tmp:
              '--window-size=1440,1000', '--virtual-time-budget=7000',
              f'--screenshot={EVIDENCE}/P06_EQUIPO_DSW-E06-dashboard.png',
              'http://127.0.0.1:4200/telemetria'], stdout=subprocess.DEVNULL)
-        print('VERIFICADO: 401, 400, 201, GET, fila PostgreSQL, dashboard capturado')
+        print('VERIFICADO: 401, 400, 201, simulador, GET, dos filas PostgreSQL, dashboard capturado')
     finally:
         for child in reversed(children):
             child.terminate()

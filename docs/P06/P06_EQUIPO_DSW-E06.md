@@ -79,9 +79,9 @@ La clave no se registra ni se copia a la evidencia. El navegador solo consulta t
 
 | Criterio R06 | Evidencia | Estado |
 |---|---|---|
-| Integración IoT, 3 pts | `iot-simulator/simular.py`, POST `201` en `evidencia/P06_EQUIPO_DSW-E06-recorrido.json` | VERIFICADO |
+| Integración IoT, 3 pts | Salida real de `iot-simulator/simular.py` y POST `201` en `evidencia/P06_EQUIPO_DSW-E06-recorrido.json` | VERIFICADO |
 | Dashboard, 3 pts | `evidencia/P06_EQUIPO_DSW-E06-dashboard.png`, compilación Angular | VERIFICADO |
-| Historial PostgreSQL, 2 pts | `filasPostgreSQL: 1` y GET con la misma lectura en JSON | VERIFICADO |
+| Historial PostgreSQL, 2 pts | `filasPostgreSQL: 2` y GET con ambas lecturas en JSON | VERIFICADO |
 | Eventos o lectura periódica, 2 pts | Ciclo de 5 segundos en simulador y componente Angular | VERIFICADO en código; PENDIENTE prueba prolongada |
 | Análisis y alertas, 2 pts | Valor 26 devuelve `AFORO_ALTO` y aparece en la captura; umbral y desconexión documentados | VERIFICADO para umbral; PENDIENTE observación de desconexión |
 
@@ -96,11 +96,12 @@ La clave no se registra ni se copia a la evidencia. El navegador solo consulta t
 | Maven `test` | 44 pruebas, 0 fallos | VERIFICADO |
 | Angular `npm test -- --watch=false --browsers=ChromeHeadless` | 29 pruebas, 0 fallos | VERIFICADO |
 | Angular `npm run build` | Compilación terminada | VERIFICADO |
-| API + PostgreSQL + navegador | `401`, `400`, `201`, GET `200`, 1 fila SQL y captura | VERIFICADO |
+| API + PostgreSQL + navegador | `401`, `400`, `201`, GET `200`, 2 filas SQL y captura | VERIFICADO |
+| Simulador CLI, una lectura | Ejecutado con `--una-vez --valor 26`; salida en JSON | VERIFICADO |
 | Simulador CLI en proceso continuo | No ejecutado en esta verificación | PENDIENTE |
 | Docker Compose con PostgreSQL 16 | No ejecutado en esta verificación | PENDIENTE |
 
-La prueba aislada genera una lectura HTTP equivalente al simulador para comprobar el recorrido. La captura muestra el valor consultado por Angular, no datos añadidos manualmente en la página. La base de verificación se elimina al concluir el script. Las pruebas unitarias se ejecutaron con Java 21 instalado en el host, usando compilación objetivo Java 11; el recorrido de la API utilizó el ejecutable Java 11.
+La prueba aislada genera una lectura HTTP de control y ejecuta el simulador CLI para generar otra. La captura muestra valores consultados por Angular, no datos añadidos manualmente en la página. La base de verificación se elimina al concluir el script. Las pruebas unitarias se ejecutaron con Java 21 instalado en el host, usando compilación objetivo Java 11; el recorrido de la API utilizó el ejecutable Java 11.
 
 ## Decisiones, límites y seguridad
 

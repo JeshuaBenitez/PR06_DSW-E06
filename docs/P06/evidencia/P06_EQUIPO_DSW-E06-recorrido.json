@@ -7,7 +7,7 @@
       "idLectura": 1,
       "idDispositivo": 1,
       "idSesion": 1,
-      "fechaHora": "2026-11-15T04:26:10.569623Z",
+      "fechaHora": "2026-11-15T04:29:55.113134Z",
       "variable": "AFORO",
       "unidad": "personas",
       "origen": "SIMULADOR_HTTP",
@@ -15,14 +15,26 @@
       "valor": 26
     }
   ],
+  "salidaSimulador": "2026-11-15T04:29:55.513514Z lectura=2 valor=26 alerta=AFORO_ALTO",
   "historial": [
     200,
     [
       {
+        "idLectura": 2,
+        "idDispositivo": 1,
+        "idSesion": 1,
+        "fechaHora": "2026-11-15T04:29:55.513514Z",
+        "variable": "AFORO",
+        "unidad": "personas",
+        "origen": "SIMULADOR_HTTP",
+        "alerta": "AFORO_ALTO",
+        "valor": 26.0
+      },
+      {
         "idLectura": 1,
         "idDispositivo": 1,
         "idSesion": 1,
-        "fechaHora": "2026-11-15T04:26:10.569623Z",
+        "fechaHora": "2026-11-15T04:29:55.113134Z",
         "variable": "AFORO",
         "unidad": "personas",
         "origen": "SIMULADOR_HTTP",
@@ -31,5 +43,5 @@
       }
     ]
   ],
-  "filasPostgreSQL": 1
+  "filasPostgreSQL": 2
 }
